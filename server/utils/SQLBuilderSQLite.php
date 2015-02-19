@@ -62,12 +62,62 @@ class SQLBuilderSQLite implements SQLBuilder
 
     public function selectAll() 
     {
+        if($this->obj->NameRef === "")
+        {
+            $sql = "SELECT * FROM ".$this->obj->Name." " . ($this->obj->Where === "" ? "ORDER BY " : (" WHERE (".$this->obj->Where.") ORDER BY ")).$this->obj->OrderBy;
+        }
+        else
+        {
+            $sql =  "SELECT * FROM ".$this->obj->Name." WHERE cod in ".
+                    "(SELECT codref FROM Reference WHERE class = '".$this->obj->NameRef."' and cod = ".
+                    $this->obj->CodRef." AND classref = '".$this->obj->Name."' ". ($this->obj->Ix !== 2147483647 ? " AND ix = ".$this->obj->Ix." " : "").") "
+                    ." ".
+                    ($this->obj->Where === "" ? "ORDER BY " : (" AND (".$this->obj->Where.") ORDER BY ")).$this->obj->OrderBy;
+        }
         
+        if(count($this->obj->Limiter))
+        {
+            $sql .= " LIMIT " . $this->obj->Limiter[0] . ", " . $this->obj->Limiter[1];
+        }
+        
+        return $sql;
     }
 
     public function selectWhere() 
     {
+        $sql = "SELECT ".$this->obj->Name.".cod, ";
+        $sqlInner = "";
+        $sqlWhere = "";
         
+        for($i = 0; $i < count($this->obj->Fields); $i++)
+        {
+            $sql .= $this->obj->Name.".".$this->obj->Fields[$i].", ";
+        }
+        
+        $sql = preg_replace('/, $/', "", $sql);
+        $sql .= " FROM ".$this->obj->Name." ";
+        
+        // inner joins
+        for($i = 0; $i < count($this->obj->NameRefs); $i++)
+        {
+            $sqlInner .=    " INNER JOIN Reference ON Reference.cod = ".
+                            $this->obj->Name.".cod ".
+                            "INNER JOIN ".$this->obj->NameRefs[$i]." ON ".
+                            $this->obj->NameRefs[$i].".cod = Reference.codref AND Reference.classref = '".
+                            $this->obj->NameRefs[$i]."' ";
+            
+            $sqlWhere .=    "".$this->obj->NameRefs[$i].".".$this->obj->FieldsRefs[$i]." ".
+                            $this->obj->Comparators[$i]." ".
+                            (gettype($this->obj->LogicVals[$i]) == "string" ? "'".
+                                    ($this->obj->Comparators[$i] === " LIKE " ? "%" : "")
+                                    .$this->obj->LogicVals[$i]
+                                    .($this->obj->Comparators[$i] === " LIKE " ? "%" : "")."'" : $this->obj->LogicVals[$i]).
+                            " ".($this->obj->LogicNexts[$i] == null ? "" : $this->obj->LogicNexts[$i]);
+        }
+        
+        $sql .= $sqlInner." WHERE ".$sqlWhere." ".$this->obj->OrderBy;
+        
+        return $sql;
     }
 
     public function setJSONObject($obj) 
@@ -96,4 +146,10 @@ class SQLBuilderSQLite implements SQLBuilder
         
         return $sqls;
     }
+
+    public function createRefTable() 
+    {
+        return "CREATE TABLE IF NOT EXISTS Reference (class TEXT, classref TEXT, ix INTEGER, cod INTEGER, codref INTEGER, PRIMARY KEY(class, classref, cod, codref));";
+    }
+
 }

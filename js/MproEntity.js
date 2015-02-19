@@ -400,13 +400,14 @@ MproEntity.getWhere = function (classe)
         var sync = true;
         var end = true;
         var order = "";
-        var sql = "SELECT " + instance.class + ".cod, ";
+        var dataRequest = new MproEntity.DataRequest();
+        
+        dataRequest.Name = instance.class;
 
         for (var field in instance)
         {
             if (instance[field] instanceof Array)
             {
-                //relations.push(field.replace("Entity", ""));
                 relations.push(field.replace(/Entity[0-9]*/, ""));
             }
             else
@@ -415,15 +416,11 @@ MproEntity.getWhere = function (classe)
                         && (field !== "RefObject") && (typeof (instance[field]) !== "function"))
                 {
                     fields.push(field);
-                    sql += instance.class + "." + field + ", ";
+                    dataRequest.Fields.push(field);
                 }
             }
         }
 
-        sql = sql.replace(/, $/, "");
-        sql += " FROM " + instance.class + " ";
-
-        // INNER JOINS
         for (var i = 1; i < arguments.length - 1; i++)
         {
             if (!(typeof (arguments[i]) === "function"))
@@ -432,17 +429,20 @@ MproEntity.getWhere = function (classe)
                 {
                     if (arguments[i].class !== instance.class)
                     {
-                        sql += " INNER JOIN Reference ON Reference.cod = "
-                                + instance.class + ".cod "
-                                + "INNER JOIN " + arguments[i].class + " ON "
-                                + arguments[i].class + ".cod = Reference.codref AND Reference.classref = '" +
-                                arguments[i].class + "' ";
+                        dataRequest.NameRefs.push(arguments[i].class);
+                        dataRequest.FieldsRefs.push(arguments[i].field);
                     }
-                    tuples.push(arguments[i]);
+                    else
+                    {
+                        throw new Error("Ambiguos class search " + instance.class + ". Instead, use the argument \"where\" of getAll.");
+                        return null;
+                    }
                 }
                 else
                 {
-                    logics.push(arguments[i]);
+                    dataRequest.LogicVals.push(arguments[i].val);
+                    dataRequest.Comparators.push(arguments[i].comparator);
+                    dataRequest.LogicNexts.push(arguments[i].logicNext);
                 }
             }
         }
@@ -451,15 +451,15 @@ MproEntity.getWhere = function (classe)
                 * TRATAMENTO DE ERROS
                 */
 
-        if (logics.length !== tuples.length)
+        if (dataRequest.LogicVals.length !== dataRequest.NameRefs.length)
         {
-            throw new Error("Número de Entidades relacionadas não corresponde ao número de operações Lógicas!");
+            throw new Error("Number of Related Entities not match the number of Logical Operations.");
             return null;
         }
 
-        if (typeof (arguments[(logics.length + tuples.length) + 1]) !== "function")
+        if (typeof (arguments[(dataRequest.LogicVals.length + dataRequest.NameRefs.length) + 1]) !== "function")
         {
-            throw new Error("Callback de termino não definido!");
+            throw new Error("End Callback undefined.");
             return null;
         }
 
@@ -467,34 +467,18 @@ MproEntity.getWhere = function (classe)
         {
             /** @type MproEntity.Order */
             var orObj = arguments[arguments.length - 1];
-            order += " ORDER BY " + orObj.Classe.class + "." + orObj.Classe.field + " " + orObj.OrderBy;
+            dataRequest.OrderBy += " ORDER BY " + orObj.Classe.class + "." + orObj.Classe.field + " " + orObj.OrderBy;
         }
 
-        var callBack = arguments[(logics.length + tuples.length) + 1];
-        sql += " WHERE ";
-
-        // WHERES
-        for (var i = 0; i < logics.length; i++)
-        {
-            sql += "" + tuples[i].class + "." + tuples[i].field + " "
-                    + logics[i].comparator + " " +
-                    (typeof (logics[i].val) == "string" ? "'" +
-                            (logics[i].comparator === " LIKE " ? "%" : "")
-                            + logics[i].val
-                            + (logics[i].comparator === " LIKE " ? "%" : "") + "'" : logics[i].val) +
-                    " " + (logics[i].logicNext === null ? "" : logics[i].logicNext);
-        }
-
-        sql += " " + order;
+        var callBack = arguments[(dataRequest.LogicVals.length + dataRequest.NameRefs.length) + 1];
 
         if (!window.externalEnvironment)
         {
             var ajax = new Ajax();
-            ajax.Url = MproEntity.scriptQuery;
-            ajax.setData({cmd: sql, user: __projectUser__, cod: __projectCod__});
+            ajax.Url = MproEntity.serverUrl + "/dataRequestService" + MproEntity.serverTech;
+            ajax.setData({dataRequest: JSON.stringify(dataRequest), user: __projectUser__, cod: __projectCod__});
             ajax.onSucces(function (data)
             {
-                //console.log(data);
                 /** @type Array */
                 var arrTmp = JSON.parse(data);
                 var refs = [];
@@ -515,7 +499,6 @@ MproEntity.getWhere = function (classe)
                             objTmp[fields[i]] = arrM[i + 1];
                         else
                         {
-                            //var ret = MproEntity.getAll(window[fields[i].replace("Ref", "")], null, 1, undefined, "cod = " + arrM[i+1], undefined, false);
                             refs.push(fields[i]);
                             var endi = false;
                             if (j >= arrTmp.length - 1)
@@ -532,7 +515,7 @@ MproEntity.getWhere = function (classe)
                                 };
                             };
 
-                            MproEntity.getAll(window[fields[i].replace("Ref", "")], funcCall(objTmp, fields, i, callBack, elems, endi, refs.length), 1, undefined, "cod = " + arrM[i + 1], undefined, true, endi);
+                            MproEntity.getAll(window[fields[i].replace("Ref", "")], funcCall(objTmp, fields, i, callBack, elems, endi, refs.length), "cod = " + arrM[i + 1], undefined, 1, undefined, true, endi);
                         }
                     }
 
@@ -541,7 +524,6 @@ MproEntity.getWhere = function (classe)
                         var entitiesEqCount = [];
                         for (var k = 0; k < relations.length; k++)
                         {
-                            //var objR = MproEntity.getAll(window[relations[k]], undefined, undefined, objTmp, undefined, undefined, false);
                             var endi = false;
 
                             if (entitiesEqCount[relations[k]] !== undefined)
@@ -566,8 +548,6 @@ MproEntity.getWhere = function (classe)
                                     {
                                         objTmp["Entity" + entityIx + "" + relations[k]] = objR;
                                         objTmp[relations[k + 1]] = objR;
-                                        //objTmp.RefObject = me;
-                                        //k++;
                                     }
                                     if (callBack && endi)
                                         setTimeout(function ()
@@ -578,22 +558,16 @@ MproEntity.getWhere = function (classe)
                             };
 
                             if (k % 2 === 0)
-                                MproEntity.getAll(window[relations[k]], funcCall2(objTmp, relations, k, callBack, endi, entitiesEqCount[relations[k]]), undefined, objTmp, undefined, undefined, true, undefined, entitiesEqCount[relations[k]]);
-                            //objTmp["Entity" + relations[k]].push(objR[0]);
+                                MproEntity.getAll(window[relations[k]], funcCall2(objTmp, relations, k, callBack, endi, entitiesEqCount[relations[k]]), undefined, undefined, undefined, objTmp, true, undefined, entitiesEqCount[relations[k]]);
+
                         }
                     }
 
                     elems.push(objTmp);
                 }
 
-                if (relations.length !== 0 || refs.length !== 0)
+                if (!(relations.length !== 0 || refs.length !== 0))
                 {
-                    // se tem referencias não faz nada
-                    //callBack(elems);
-                }
-                else
-                {
-                    //hideLoading();
                     callBack(elems, end);
                 }
 
@@ -601,12 +575,11 @@ MproEntity.getWhere = function (classe)
                     callBack(elems, end);
             });
             ajax.execute(sync);
-            //showLoading();
         }
         else
         {
             /** @type Array */
-            var arrTmp = JSON.parse(externalEnvironment.query(sql));
+            var arrTmp = JSON.parse(externalEnvironment.query(dataRequest));
             var refs = [];
 
             for (var j = 0; j < arrTmp.length; j++)
@@ -625,7 +598,6 @@ MproEntity.getWhere = function (classe)
                         objTmp[fields[i]] = arrM[i + 1];
                     else
                     {
-                        //var ret = MproEntity.getAll(window[fields[i].replace("Ref", "")], null, 1, undefined, "cod = " + arrM[i+1], undefined, false);
                         refs.push(fields[i]);
                         var endi = false;
                         if (j >= arrTmp.length - 1)
@@ -642,7 +614,7 @@ MproEntity.getWhere = function (classe)
                             };
                         };
 
-                        MproEntity.getAll(window[fields[i].replace("Ref", "")], funcCall(objTmp, fields, i, callBack, elems, endi, refs.length), 1, undefined, "cod = " + arrM[i + 1], undefined, true, endi);
+                        MproEntity.getAll(window[fields[i].replace("Ref", "")], funcCall(objTmp, fields, i, callBack, elems, endi, refs.length), "cod = " + arrM[i + 1], undefined, 1, undefined, true, endi);
                     }
                 }
 
@@ -651,7 +623,6 @@ MproEntity.getWhere = function (classe)
                     var entitiesEqCount = [];
                     for (var k = 0; k < relations.length; k++)
                     {
-                        //var objR = MproEntity.getAll(window[relations[k]], undefined, undefined, objTmp, undefined, undefined, false);
                         var endi = false;
 
                         if (entitiesEqCount[relations[k]] !== undefined)
@@ -676,8 +647,6 @@ MproEntity.getWhere = function (classe)
                                 {
                                     objTmp["Entity" + entityIx + "" + relations[k]] = objR;
                                     objTmp[relations[k + 1]] = objR;
-                                    //objTmp.RefObject = me;
-                                    //k++;
                                 }
                                 if (callBack && endi)
                                     setTimeout(function ()
@@ -688,22 +657,15 @@ MproEntity.getWhere = function (classe)
                         };
 
                         if (k % 2 === 0)
-                            MproEntity.getAll(window[relations[k]], funcCall2(objTmp, relations, k, callBack, endi, entitiesEqCount[relations[k]]), undefined, objTmp, undefined, undefined, true, undefined, entitiesEqCount[relations[k]]);
-                        //objTmp["Entity" + relations[k]].push(objR[0]);
+                            MproEntity.getAll(window[relations[k]], funcCall2(objTmp, relations, k, callBack, endi, entitiesEqCount[relations[k]]), undefined, undefined, undefined, objTmp, true, undefined, entitiesEqCount[relations[k]]);
                     }
                 }
 
                 elems.push(objTmp);
             }
 
-            if (relations.length !== 0 || refs.length !== 0)
+            if (!(relations.length !== 0 || refs.length !== 0))
             {
-                // se tem referencias não faz nada
-                //callBack(elems);
-            }
-            else
-            {
-                //hideLoading();
                 callBack(elems, end);
             }
 
@@ -717,7 +679,7 @@ MproEntity.getWhere = function (classe)
         return null;
 };
 
-MproEntity.getAll = function (classe, callBack, limiter, superFilter, where, ordBy, sync, end, ix)
+MproEntity.getAll = function (classe, callBack, where, ordBy, limiter, superFilter, sync, end, ix)
 {
 
     if (classe === undefined)
@@ -745,7 +707,6 @@ MproEntity.getAll = function (classe, callBack, limiter, superFilter, where, ord
     {
         if (instance[field] instanceof Array)
         {
-            //relations.push(field.replace("Entity", ""));
             relations.push(field.replace(/Entity[0-9]*/, ""));
         }
         else
@@ -758,27 +719,31 @@ MproEntity.getAll = function (classe, callBack, limiter, superFilter, where, ord
         }
     }
 
-    if (superFilter === undefined)
-        sql = "SELECT * FROM " + instance.class + " " + (where === "" ? "ORDER BY " : (" WHERE (" + where + ") ORDER BY ")) + ordBy;
-    else
+    var dataRequest = new MproEntity.DataRequest();
+    dataRequest.Name = instance.class;
+    dataRequest.Where = where;
+    dataRequest.OrderBy = ordBy;
+
+    if (superFilter !== undefined)
     {
-        sql = "SELECT * FROM " + instance.class + " WHERE cod in "
-                + "(SELECT codref FROM Reference WHERE class = '" + superFilter.class + "' and cod = " +
-                superFilter.cod + " AND classref = '" + instance.class + "' " + (ix !== undefined ? " AND ix = " + ix + " " : "") + ") "
-                + " " +
-                (where === "" ? "ORDER BY " : (" AND (" + where + ") ORDER BY ")) + ordBy;
+        dataRequest.NameRef = superFilter.class;
+        dataRequest.CodRef = superFilter.cod;
+        if(ix !== undefined)
+            dataRequest.Ix = ix;
     }
 
     if (limiter && limiter.length && (limiter.length === 2))
     {
+        dataRequest.Limiter[0] = limiter[0];
+        dataRequest.Limiter[1] = limiter[1];
         sql += " LIMIT " + limiter[0] + ", " + limiter[1];
     }
 
     if (!window.externalEnvironment)
     {
         var ajax = new Ajax();
-        ajax.Url = MproEntity.scriptQuery;
-        ajax.setData({cmd: sql, user: __projectUser__, cod: __projectCod__});
+        ajax.Url = MproEntity.serverUrl + "/dataRequestAllService" + MproEntity.serverTech;
+        ajax.setData({dataRequest: JSON.stringify(dataRequest), user: __projectUser__, cod: __projectCod__});
         ajax.onSucces(function (data)
         {
             //console.log(data);
@@ -802,7 +767,6 @@ MproEntity.getAll = function (classe, callBack, limiter, superFilter, where, ord
                         objTmp[fields[i]] = arrM[i + 1];
                     else
                     {
-                        //var ret = MproEntity.getAll(window[fields[i].replace("Ref", "")], null, 1, undefined, "cod = " + arrM[i+1], undefined, false);
                         refs.push(fields[i]);
                         var endi = false;
                         if (j >= arrTmp.length - 1)
@@ -816,10 +780,10 @@ MproEntity.getAll = function (classe, callBack, limiter, superFilter, where, ord
 
                                 if (callBack && endi && refs.length === len)
                                     callBack(elems);
-                            }
+                            };
                         };
 
-                        MproEntity.getAll(window[fields[i].replace("Ref", "")], funcCall(objTmp, fields, i, callBack, elems, endi, refs.length), 1, undefined, "cod = " + arrM[i + 1], undefined, true, endi);
+                        MproEntity.getAll(window[fields[i].replace("Ref", "")], funcCall(objTmp, fields, i, callBack, elems, endi, refs.length), "cod = " + arrM[i + 1], undefined, 1, undefined, true, endi);
                     }
                 }
 
@@ -828,7 +792,6 @@ MproEntity.getAll = function (classe, callBack, limiter, superFilter, where, ord
                     var entitiesEqCount = [];
                     for (var k = 0; k < relations.length; k++)
                     {
-                        //var objR = MproEntity.getAll(window[relations[k]], undefined, undefined, objTmp, undefined, undefined, false);
                         var endi = false;
 
                         if (entitiesEqCount[relations[k]] !== undefined)
@@ -853,8 +816,6 @@ MproEntity.getAll = function (classe, callBack, limiter, superFilter, where, ord
                                 {
                                     objTmp["Entity" + entityIx + "" + relations[k]] = objR;
                                     objTmp[relations[k + 1]] = objR;
-                                    //objTmp.RefObject = me;
-                                    //k++;
                                 }
                                 if (callBack && endi)
                                     setTimeout(function ()
@@ -865,22 +826,15 @@ MproEntity.getAll = function (classe, callBack, limiter, superFilter, where, ord
                         };
 
                         if (k % 2 === 0)
-                            MproEntity.getAll(window[relations[k]], funcCall2(objTmp, relations, k, callBack, endi, entitiesEqCount[relations[k]]), undefined, objTmp, undefined, undefined, true, undefined, entitiesEqCount[relations[k]]);
-                        //objTmp["Entity" + relations[k]].push(objR[0]);
+                            MproEntity.getAll(window[relations[k]], funcCall2(objTmp, relations, k, callBack, endi, entitiesEqCount[relations[k]]), undefined, undefined, undefined, objTmp, true, undefined, entitiesEqCount[relations[k]]);
                     }
                 }
 
                 elems.push(objTmp);
             }
 
-            if (relations.length !== 0 || refs.length !== 0)
+            if (!(relations.length !== 0 || refs.length !== 0))
             {
-                // se tem referencias não faz nada
-                //callBack(elems);
-            }
-            else
-            {
-                //hideLoading();
                 callBack(elems, end);
             }
 
@@ -888,12 +842,11 @@ MproEntity.getAll = function (classe, callBack, limiter, superFilter, where, ord
                 callBack(elems, end);
         });
         ajax.execute(sync);
-        //showLoading();
     }
     else
     {
         /** @type Array */
-        var arrTmp = JSON.parse(externalEnvironment.query(sql));
+        var arrTmp = JSON.parse(externalEnvironment.query(dataRequest));
         var refs = [];
 
         for (var j = 0; j < arrTmp.length; j++)
@@ -912,7 +865,6 @@ MproEntity.getAll = function (classe, callBack, limiter, superFilter, where, ord
                     objTmp[fields[i]] = arrM[i + 1];
                 else
                 {
-                    //var ret = MproEntity.getAll(window[fields[i].replace("Ref", "")], null, 1, undefined, "cod = " + arrM[i+1], undefined, false);
                     refs.push(fields[i]);
                     var endi = false;
                     if (j >= arrTmp.length - 1)
@@ -926,10 +878,10 @@ MproEntity.getAll = function (classe, callBack, limiter, superFilter, where, ord
 
                             if (callBack && endi && refs.length === len)
                                 callBack(elems);
-                        }
+                        };
                     };
 
-                    MproEntity.getAll(window[fields[i].replace("Ref", "")], funcCall(objTmp, fields, i, callBack, elems, endi, refs.length), 1, undefined, "cod = " + arrM[i + 1], undefined, true, endi);
+                    MproEntity.getAll(window[fields[i].replace("Ref", "")], funcCall(objTmp, fields, i, callBack, elems, endi, refs.length), "cod = " + arrM[i + 1], undefined, 1, undefined, true, endi);
                 }
             }
 
@@ -938,7 +890,6 @@ MproEntity.getAll = function (classe, callBack, limiter, superFilter, where, ord
                 var entitiesEqCount = [];
                 for (var k = 0; k < relations.length; k++)
                 {
-                    //var objR = MproEntity.getAll(window[relations[k]], undefined, undefined, objTmp, undefined, undefined, false);
                     var endi = false;
 
                     if (entitiesEqCount[relations[k]] !== undefined)
@@ -963,8 +914,6 @@ MproEntity.getAll = function (classe, callBack, limiter, superFilter, where, ord
                             {
                                 objTmp["Entity" + entityIx + "" + relations[k]] = objR;
                                 objTmp[relations[k + 1]] = objR;
-                                //objTmp.RefObject = me;
-                                //k++;
                             }
                             if (callBack && endi)
                                 setTimeout(function ()
@@ -975,22 +924,15 @@ MproEntity.getAll = function (classe, callBack, limiter, superFilter, where, ord
                     };
 
                     if (k % 2 === 0)
-                        MproEntity.getAll(window[relations[k]], funcCall2(objTmp, relations, k, callBack, endi, entitiesEqCount[relations[k]]), undefined, objTmp, undefined, undefined, true, undefined, entitiesEqCount[relations[k]]);
-                    //objTmp["Entity" + relations[k]].push(objR[0]);
+                        MproEntity.getAll(window[relations[k]], funcCall2(objTmp, relations, k, callBack, endi, entitiesEqCount[relations[k]]), undefined, undefined, undefined, objTmp, true, undefined, entitiesEqCount[relations[k]]);
                 }
             }
 
             elems.push(objTmp);
         }
 
-        if (relations.length !== 0 || refs.length !== 0)
+        if (!(relations.length !== 0 || refs.length !== 0))
         {
-            // se tem referencias não faz nada
-            //callBack(elems);
-        }
-        else
-        {
-            //hideLoading();
             callBack(elems, end);
         }
 
@@ -1051,7 +993,10 @@ MproEntity.DataRequest = function ()
     this.OrderBy = "";
     this.Ix = 2147483647;
     this.NameRef = "";
+    this.CodRef = 2147483647;
+    this.Limiter = [];
     this.NameRefs = [];
+    this.FieldsRefs = [];
     this.LogicVals = [];
     this.Comparators = [];
     this.LogicNexts = [];

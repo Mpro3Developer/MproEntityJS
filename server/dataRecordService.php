@@ -31,6 +31,7 @@ if(filter_input(INPUT_POST, 'dataRecord'))
     
     if(isset($dataRecord->CodRef))
     {
+        $lauDB->execute($sqlBuilder->createRefTable());
         $lauDB->execute($sqlBuilder->insertRef());
     }
     else if($dataRecord->Cod === 2147483647)

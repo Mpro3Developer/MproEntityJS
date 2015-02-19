@@ -27,18 +27,36 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         <script type="text/javascript" src="js/Ajax.js"></script>
         <script type="text/javascript" src="js/MproEntity.js"></script>
         
-        <script type="text/javascript" src="js/Client.js"></script>
+        <script type="text/javascript" src="js/Employee.js"></script>
+        <script type="text/javascript" src="js/Sector.js"></script>
         
         <script type="text/javascript">
             
             $(document).ready(function()
             {
-                window.c = new Client();
-                window.c.Name = "Matheus Castello";
-                window.c.NickName = "Mpro3";
-                window.c.BirthDate = "14/11/1990";
-                window.c.CreditLimit = 2500.99;
-                window.c.Save();
+                window.employee = new Employee();
+                window.employee.Name = "Matheus Castello";
+                window.employee.NickName = "Mpro3";
+                window.employee.BirthDate = "14/11/1990";
+                window.employee.Salary = 2500.99;
+                window.employee.Save();
+                
+                MproEntity.getAll(Sector, function(data)
+                {
+                    if(data.length)
+                    {
+                        data[0].Employees.push(window.employee);
+                        data[0].Save();
+                    }
+                    else
+                    {
+                        sector = new Sector();
+                        sector.Name = "Sector 42";
+                        sector.SalaryBonus = 42.42;
+                        sector.Employees.push(window.employee);
+                        sector.Save();
+                    }
+                });
             });
             
         </script>

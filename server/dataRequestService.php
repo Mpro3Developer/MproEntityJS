@@ -1,6 +1,6 @@
 <?php
 
-/*
+/* 
  * Copyright (C) 2015 Matheus Castello
  * 
  *  There is no peace only passion
@@ -19,15 +19,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-interface SQLBuilder 
+require_once 'laudb/LauDBSQLite.php';
+require_once 'utils/SQLBuilderSQLite.php';
+
+if(filter_input(INPUT_POST, 'dataRequest'))
 {
-    public function createTable();
-    public function setJSONObject($obj);
-    public function insert();
-    public function createRefTable();
-    public function insertRef();
-    public function update();
-    public function delete();
-    public function selectAll();
-    public function selectWhere();
+    $dataRequest = json_decode(filter_input(INPUT_POST, 'dataRequest'));
+    $lauDB = new LauDBSQLite("dataBase.lau");
+    $sqlBuilder = new SQLBuilderSQLite();
+    $sqlBuilder->setJSONObject($dataRequest);
+    
+    $res = $lauDB->query($sqlBuilder->selectWhere());
+    
+    echo json_encode($res);
 }
+

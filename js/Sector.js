@@ -1,9 +1,7 @@
-<?php
-
-/*
+/* 
  * Copyright (C) 2015 Matheus Castello
  * 
- *  There is no peace only passion
+ * There is no peace only passion
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,15 +17,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-interface SQLBuilder 
+function Sector()
 {
-    public function createTable();
-    public function setJSONObject($obj);
-    public function insert();
-    public function createRefTable();
-    public function insertRef();
-    public function update();
-    public function delete();
-    public function selectAll();
-    public function selectWhere();
+    this.SalaryBonus = 0.0;
+    this.Name = "";
+    this.Entity1Employee = [];
+    this.Employees = this.Entity1Employee;
+    
+    /*
+        * Inheritance constructor
+        */
+    MproEntity.call(this);
 }

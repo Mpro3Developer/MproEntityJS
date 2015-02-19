@@ -17,20 +17,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-function Client()
+function Employee()
 {
     this.Name = "";
     this.NickName = "";
     this.BirthDate = "";
-    this.CreditLimit = 0.0;
+    this.Salary = 0.0;
     
     /*
         * Inheritance constructor
         */
     MproEntity.call(this);
 }
-
-/*
-* Inheritance
-*/
-// Client.prototype = new MproEntity();
