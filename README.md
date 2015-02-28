@@ -8,6 +8,6 @@ The MproEntityJS is a open source GNU tool in testing phase, which allows "class
 
 The example of how data is structured on the server side is written in PHP using PDO SQLite.
 
-The index.php file has a complete example of how to work with the Framework.
+The index.html file has a complete example of how to work with the Framework.
 
 MproEntity.js and its plugins have dependence on Jquery library for manipulating DOM . List.js , Table.js and ComboBox.js has dependence of the Bootstrap styles.
