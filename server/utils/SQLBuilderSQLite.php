@@ -135,21 +135,70 @@ class SQLBuilderSQLite implements SQLBuilder
 
     public function createTable() 
     {
-        $sqls = array();
+        return "CREATE TABLE ".$this->obj->Name." (cod INTEGER PRIMARY KEY)";
+    }
+
+    public function alterTable($res)
+    {
+        $sqlsField = array();
+        $sqlsAlter = array();
+        $canTempDrop = false;
         
-        $sqls[] = "CREATE TABLE ".$this->obj->Name." (cod INTEGER PRIMARY KEY)";
+        $fieldsFromDB = array();
+        $fieldsTypesFromDB = array();
+        $mapFromDB = array();
+
+        for($i = 1; $i < count($res); $i++)
+        {
+            $mapFromDB[$res[$i][1]] = true;
+        }
         
         for($i = 0; $i < count($this->obj->Fields); $i++) 
         {
-            $sqls[] = "ALTER TABLE ".$this->obj->Name." ADD ".$this->obj->Fields[$i]." ".$this->obj->Types[$i];
+            $sqlsField[] = "ALTER TABLE ".$this->obj->Name." ADD ".$this->obj->Fields[$i]." ".$this->obj->Types[$i];
+            
+            if($mapFromDB[$this->obj->Fields[$i]])
+            {
+                $fieldsFromDB[] = $this->obj->Fields[$i];
+                $fieldsTypesFromDB[] = $this->obj->Types[$i];
+            }
+            else
+            {
+                $canTempDrop = true;
+            }
         }
         
-        return $sqls;
+        if((count($res) -1) > count($this->obj->Fields))
+        {
+            $canTempDrop = true;
+        }
+        
+        if($canTempDrop)
+        {
+            $sqlsAlter[] = "CREATE TABLE back_".$this->obj->Name." (cod INTEGER PRIMARY KEY);";
+            for($i = 0; $i < count($fieldsFromDB); $i++)
+            {
+                $sqlsAlter[] = "ALTER TABLE back_".$this->obj->Name." ADD ".$fieldsFromDB[$i]." ".$fieldsTypesFromDB[$i];
+            }
+            $sqlsAlter[] = "INSERT INTO back_".$this->obj->Name." SELECT cod, ".(implode(",", $fieldsFromDB))." FROM ".$this->obj->Name.";";
+            $sqlsAlter[] = "DROP TABLE ".$this->obj->Name.";";
+            $sqlsAlter[] = $this->createTable();
+            $sqlsAlter = array_merge($sqlsAlter, $sqlsField);
+            $sqlsAlter[] = "INSERT INTO ".$this->obj->Name."(cod, ".(implode(",", $fieldsFromDB)).") SELECT cod, ".(implode(",", $fieldsFromDB))." FROM back_".$this->obj->Name.";";
+            $sqlsAlter[] = "DROP TABLE back_".$this->obj->Name.";";
+        }
+        
+        return count($sqlsField) > count($sqlsAlter) ? $sqlsField : $sqlsAlter;
     }
-
+    
     public function createRefTable() 
     {
-        return "CREATE TABLE IF NOT EXISTS Reference (class TEXT, classref TEXT, ix INTEGER, cod INTEGER, codref INTEGER, PRIMARY KEY(class, classref, cod, codref));";
+        return "CREATE TABLE IF NOT EXISTS Reference (class TEXT, classref TEXT, ix INTEGER, cod INTEGER, codref INTEGER, PRIMARY KEY(class, classref, ix, cod, codref));";
+    }
+
+    public function describeTable()
+    {
+        return "PRAGMA table_info([".$this->obj->Name."])";
     }
 
 }

@@ -1,68 +1,279 @@
-<!DOCTYPE html>
-<!--
-Copyright (C) 2015 Matheus Castello
+<!doctype html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang=""> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8" lang=""> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9" lang=""> <![endif]-->
+<!--[if gt IE 8]><!--> 
 
-There is no peace only passion
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
--->
-<html>
+<html class="no-js" lang=""> <!--<![endif]-->
     <head>
-        <title>MproEntityJS Test</title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-        <script type="text/javascript" src="js/jquery.js"></script>
-        <script type="text/javascript" src="js/Ajax.js"></script>
-        <script type="text/javascript" src="js/MproEntity.js"></script>
-        
-        <script type="text/javascript" src="js/Employee.js"></script>
-        <script type="text/javascript" src="js/Sector.js"></script>
-        
-        <script type="text/javascript">
-            
-            $(document).ready(function()
-            {
-                window.employee = new Employee();
-                window.employee.Name = "Matheus Castello";
-                window.employee.NickName = "Mpro3";
-                window.employee.BirthDate = "14/11/1990";
-                window.employee.Salary = 2500.99;
-                window.employee.Save();
-                
-                MproEntity.getAll(Sector, function(data)
-                {
-                    if(data.length)
-                    {
-                        data[0].Employees.push(window.employee);
-                        data[0].Save();
-                    }
-                    else
-                    {
-                        sector = new Sector();
-                        sector.Name = "Sector 42";
-                        sector.SalaryBonus = 42.42;
-                        sector.Employees.push(window.employee);
-                        sector.Save();
-                    }
-                });
-            });
-            
-        </script>
-        
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="stylesheet" href="css/bootstrap.min.css">
+        <style>
+            body {
+                padding-top: 50px;
+                padding-bottom: 20px;
+            }
+        </style>
+        <link rel="stylesheet" href="css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="css/main.css">
+
+        <script src="js/vendor/modernizr-2.8.3-respond-1.4.2.min.js"></script>
     </head>
     <body>
-        <div></div>
+        <!--[if lt IE 8]>
+            <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+        <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#">MproEntityJS Example</a>
+                </div>
+                <div id="navbar" class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            <button id="buttonUsers" class="btn btn-default buttonMenu">
+                                Users
+                            </button>
+                        </li>
+                        <li>
+                            <button id="buttonBooks" class="btn btn-default buttonMenu">
+                                Books
+                            </button>
+                        </li>
+                        <li>
+                            <button id="buttonLoans" class="btn btn-default buttonMenu">
+                                Loans
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container">
+
+            <div id="userRow" class="row">
+                <div class="col-md-12">
+                    <h2>Users</h2>
+                    <br>
+                    
+                    <div id="userList">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <span 
+                                    class="icon glyphicon glyphicon-user" 
+                                    aria-hidden="true">
+                                </span>
+                                @{Name} / @{NickName}
+                                <span 
+                                    class="iconAction glyphicon glyphicon-remove-circle" 
+                                    aria-hidden="true"
+                                    onclick="deleteUser(@{cod});">
+                                </span>
+                            </div>
+                            <hr>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <button style="float: right; margin-right: 7px;" id="buttonNewUser" class="btn btn-info">
+                        New User
+                    </button>
+                    
+                    <h2>User Record</h2>
+                    
+                    <div id="userForm">
+                        <p>Name:</p>
+                        <input type="text" class="form-control GInput" placeholder="Name" mprotag="Name">
+                        <p>Nick Name:</p>
+                        <input type="text" class="form-control GInput" placeholder="Nick Name" mprotag="NickName">
+                        <p>Birth Date:</p>
+                        <input type="date" class="form-control GInput" placeholder="Birth Date" mprotag="BirthDate">
+                    </div>
+
+                    <br>
+
+                    <button style="float: right;" id="buttonSaveUser" class="btn btn-success">
+                        Save
+                    </button>
+
+                </div>
+            </div>
+
+            <div id="booksRow" class="row">
+                <div class="col-md-12">
+                    <h2>Books</h2>
+                    <br>
+
+                    <div id="bookList">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <span 
+                                    class="icon glyphicon glyphicon-book" 
+                                    aria-hidden="true">
+                                </span>
+                                @{Name} / @{Isbn}
+                                <span 
+                                    class="iconAction glyphicon glyphicon-remove-circle" 
+                                    aria-hidden="true"
+                                    onclick="deleteBook(@{cod});">
+                                </span>
+                            </div>
+                            <hr>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <button style="float: right; margin-right: 7px;" id="buttonNewBook" class="btn btn-info">
+                        New Book
+                    </button>
+                    
+                    <h2>Book Record</h2>
+
+                    <div id="bookForm">
+                        <p>Name:</p>
+                        <input type="text" class="form-control GInput" placeholder="Name" mprotag="Name">
+                        <p>ISBN:</p>
+                        <input type="text" class="form-control GInput" placeholder="Isbn" mprotag="Isbn">
+                    </div>
+
+                    <br>
+
+                    <button style="float: right;" id="buttonSaveBook" class="btn btn-success">
+                        Save
+                    </button>
+
+                </div>
+            </div>
+
+            <div id="loansRow" class="row">
+                <div class="col-md-12">
+                    <h2>Loans</h2>
+
+                    <div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <table class="table table-hover">
+                                    <tr>
+                                        <th>Edit</th>
+                                        <th>User</th>
+                                        <th>Books</th>
+                                        <th>Delete</th>
+                                    </tr>
+                                    <tbody id="loanList">
+                                        <tr>
+                                            <td>
+                                                <span style="float: none;"
+                                                    class="iconAction icon glyphicon glyphicon-edit" 
+                                                    aria-hidden="true"
+                                                    onclick="editLoan(@{cod})">
+                                                </span>
+                                            </td>
+                                            <td>
+                                                @{getUserName}
+                                            </td>
+                                            <td>
+                                                @{getBooks}
+                                            </td>
+                                            <td>
+                                                <span  style="float: none;"
+                                                    class="iconAction glyphicon glyphicon-remove-circle" 
+                                                    aria-hidden="true"
+                                                    onclick="deleteLoan(@{cod});">
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <hr>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <button style="float: right; margin-right: 7px;" id="buttonNewLoan" class="btn btn-info">
+                        New Loan
+                    </button>
+
+                    <div id="loanForm">
+                        <h2>Loan Record</h2>
+                        <p>Loan Date:</p>
+                        <input type="date" class="form-control GInput" placeholder="dd/mm/yyyy" mprotag="LoanDate">
+                        <p>Return Date:</p>
+                        <input type="date" class="form-control GInput" placeholder="dd/mm/yyyy" mprotag="ReturnDate">
+                        <p>User</p>
+                        <div id="loanUsers" class="btn-group GComboBox" style="width: 100%;" mprotag="User">
+                            Users
+                        </div>
+                        <p>Selecteds Books</p>
+                        <table id="loanBooksSelected" class="table table-hover GTable" mprotag="Books">
+                        </table>
+                        <button style="float: right;" id="buttonSaveLoan" class="btn btn-success">
+                            Save
+                        </button>
+                        <br>
+                        <p>Books to Select</p>
+                        <input id="searchBook" type="text" class="form-control" placeholder="Search Book">
+                        <div id="loanListBooks" class="list-group">
+                        </div>
+                    </div>
+
+                    <br>
+
+                </div>
+            </div>
+
+            <hr>
+
+            <footer>
+                <center>
+                    <img width="200" src="img/mproEntity.png" class="img-responsive" />
+                </center>
+            </footer>
+        </div> <!-- /container -->        
+
+        <script src="js/jquery.js"></script>
+        <script src="js/vendor/bootstrap.min.js"></script>
+
+        <!-- MproEntityJS -->
+        <script type="text/javascript" src="js/MproEntity/Ajax.js"></script>
+        <script type="text/javascript" src="js/MproEntity/MproEntity.js"></script>
+        <script type="text/javascript" src="js/MproEntity/MproEntityAnnotations.js"></script>
+
+        <!-- MproEntityJS PLUGINS -->
+        <script type="text/javascript" src="js/MproEntity/Lista.js"></script>
+        <script type="text/javascript" src="js/MproEntity/Item.js"></script>
+        <script type="text/javascript" src="js/MproEntity/ItemModel.js"></script>
+        <script type="text/javascript" src="js/MproEntity/DBsource.js"></script>
+        <script type="text/javascript" src="js/MproEntity/List.js"></script>
+        <script type="text/javascript" src="js/MproEntity/Combobox.js"></script>
+        <script type="text/javascript" src="js/MproEntity/Table.js"></script>
+        <script type="text/javascript" src="js/MproEntity/FormCreator.js"></script>
+        <script type="text/javascript" src="js/MproEntity/Repeater.js"></script>
+
+        <!-- Entities -->
+        <script type="text/javascript" src="js/entities/Book.js"></script>
+        <script type="text/javascript" src="js/entities/Loan.js"></script>
+        <script type="text/javascript" src="js/entities/User.js"></script>
+
+        <!-- Example -->
+        <script src="js/main.js"></script>
+        <script src="js/userDiv.js"></script>
+        <script src="js/bookDiv.js"></script>
+        <script src="js/loanDiv.js"></script>
     </body>
 </html>

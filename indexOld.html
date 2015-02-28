@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<!--
+Copyright (C) 2015 Matheus Castello
+
+There is no peace only passion
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+<html>
+    <head>
+        <title>MproEntityJS Test</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+        <script type="text/javascript" src="js/jquery.js"></script>
+        <script type="text/javascript" src="js/Ajax.js"></script>
+        <script type="text/javascript" src="js/MproEntity.js"></script>
+        <script type="text/javascript" src="js/MproEntityAnnotations.js"></script>
+        
+        <script type="text/javascript" src="js/Employee.js"></script>
+        <script type="text/javascript" src="js/Sector.js"></script>
+        
+        <script type="text/javascript" src="js/entities/Book.js"></script>
+        <script type="text/javascript" src="js/entities/Loan.js"></script>
+        <script type="text/javascript" src="js/entities/User.js"></script>
+        
+        <script type="text/javascript">
+            
+            $(document).ready(function()
+            {
+                window.employee = new Employee();
+                window.employee.Name = "Matheus Castello";
+                window.employee.NickName = "Mpro3";
+                window.employee.BirthDate = "14/11/1990";
+                window.employee.Salary = 2500.99;
+                window.employee.Save();
+                
+                MproEntity.getAll(Sector, function(data)
+                {
+                    if(data.length)
+                    {
+                        data[0].Employees.push(window.employee);
+                        data[0].Save();
+                    }
+                    else
+                    {
+                        sector = new Sector();
+                        sector.Name = "Sector 42";
+                        sector.SalaryBonus = 42.42;
+                        sector.Employees.push(window.employee);
+                        sector.Save();
+                    }
+                });
+            });
+            
+        </script>
+        
+    </head>
+    <body>
+        <div></div>
+    </body>
+</html>

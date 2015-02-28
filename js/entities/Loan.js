@@ -1,6 +1,6 @@
 /* 
- * Copyright (C) 2015 Matheus Castello
- * 
+ * Copyright (C) 2015 matheus
+ *
  * There is no peace only passion
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,12 +17,35 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-function Sector()
+function Loan()
 {
-    this.SalaryBonus = 0.0;
-    this.Name = "";
-    //@Reference<Employee>
-    this.Employees = [];
+    this.LoanDate = "";
+    this.ReturnDate = "";
+    //@Reference<User>
+    this.User = [];
+    //@Reference<Book>
+    this.Books = [];
+ 
+    this.getUserName = function()
+    {
+        if(this.User[0])
+            return this.User[0].Name;
+        else
+            return "ERROR";
+    };
+    
+    this.getBooks = function()
+    {
+        var ret = "";
+        if(this.Books.length)
+        {
+            for(var i = 0; i < this.Books.length; i++)
+            {
+                ret += this.Books[i].Name + "<br>";
+            }
+        }
+        return ret;
+    };
     
     /*
     * Inheritance constructor

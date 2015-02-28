@@ -1,0 +1,45 @@
+
+
+/* ==========================================================================
+   Author's custom styles
+   ========================================================================== */
+
+.icon
+{
+    font-size: 24px;
+}
+
+.iconAction
+{
+    font-size: 24px; 
+    cursor: pointer;
+    float: right;
+}
+
+.buttonMenu
+{
+    width: 96%;
+    min-width: 125px;
+    margin: 7px;
+}
+
+#booksRow
+{
+    display: none;
+}
+
+#loansRow
+{
+    display: none;
+}
+
+
+
+
+
+
+
+
+
+
+

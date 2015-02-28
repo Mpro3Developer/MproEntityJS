@@ -30,7 +30,10 @@ if(filter_input(INPUT_POST, 'createTable'))
     $sqlBuilder = new SQLBuilderSQLite();
     $sqlBuilder->setJSONObject($createTable);
     
-    $sqls = $sqlBuilder->createTable();
+    $lauDB->execute($sqlBuilder->createTable());
+    
+    $res = $lauDB->query($sqlBuilder->describeTable());
+    $sqls = $sqlBuilder->alterTable($res);
     
     foreach ($sqls as $value) 
     {

@@ -30,4 +30,6 @@ interface SQLBuilder
     public function delete();
     public function selectAll();
     public function selectWhere();
+    public function describeTable();
+    public function alterTable($res);
 }

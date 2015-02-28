@@ -25,7 +25,7 @@ function Employee()
     this.Salary = 0.0;
     
     /*
-        * Inheritance constructor
-        */
+    * Inheritance constructor
+    */
     MproEntity.call(this);
 }
