@@ -1,4 +1,6 @@
 
+MproEntity.enableInternalEnvironment();
+
 /*
  * Menu Buttons
  */

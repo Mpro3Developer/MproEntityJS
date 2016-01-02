@@ -32,7 +32,7 @@ listBooks.addMouseActionListener(function(item)
 
 formLoan.onSave(function()
 {
-    alert("Loan saved!");
+    //alert("Loan saved!");
     dbLoan.getData();
 });
 

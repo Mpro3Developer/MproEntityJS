@@ -22,7 +22,7 @@ function deleteBook(cod)
 
 formBook.onSave(function()
 {
-    alert("Book saved!");
+    //alert("Book saved!");
     dbBook.getData();
 });
 

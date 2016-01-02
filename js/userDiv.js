@@ -21,7 +21,7 @@ function deleteUser(cod)
 
 formUser.onSave(function()
 {
-    alert("User saved!");
+    //alert("User saved!");
     dbUser.getData();
 });
 
