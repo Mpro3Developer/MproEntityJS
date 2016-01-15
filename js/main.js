@@ -1,5 +1,8 @@
 
-MproEntity.enableInternalEnvironment();
+/*MproEntity.enableIndexedDB();
+MproEntity.indexedDBVersion = 13;*/
+
+//MproEntity.enableWebSQL();
 
 /*
  * Menu Buttons

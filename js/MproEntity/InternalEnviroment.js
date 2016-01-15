@@ -16,8 +16,9 @@
  */
 
 
-function InternalEnviroment()
+function InternalEnviroment(ixdb)
 {
+    var indexedDB = (ixdb == undefined ? false : ixdb);
     var db = new LauDB();
 
     function sqlBuilderFactory(obj)

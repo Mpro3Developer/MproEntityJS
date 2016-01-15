@@ -151,7 +151,10 @@ function SQLBuilder()
                             " " + (this.obj.LogicNexts[i] == null ? "" : this.obj.LogicNexts[i]);
         }
         
-        sql += sqlInner + " WHERE " + sqlWhere + " " + this.obj.OrderBy;
+        if(sqlWhere !== "")
+            sql += sqlInner + " WHERE " + sqlWhere + " " + (this.obj.OrderBy != "" ? " ORDER BY " + this.obj.OrderBy : "");
+        else
+            sql += sqlInner + " WHERE " + this.obj.Where + " " + (this.obj.OrderBy != "" ? " ORDER BY " + this.obj.OrderBy : "");
         
         return sql;
     };
