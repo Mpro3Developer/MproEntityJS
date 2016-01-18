@@ -158,9 +158,9 @@ function Query(t)
                     " AND " +
                     (typeof(value2) == "string" ? "'%" + value1.toString() + "%'" : value2.toString()) + " ";
             indexString += " >= " + 
-                    (typeof(value1) == "string" ? "'%" + value1.toString() + "%'" : value1.toString()) +
+                    (typeof(value1) == "string" ? "'" + value1.toString() + "'" : value1.toString()) +
                     " && i." + fieldTmp + " <= " + 
-                    (typeof(value2) == "string" ? "'%" + value1.toString() + "%'" : value2.toString()) + " ";
+                    (typeof(value2) == "string" ? "'" + value1.toString() + "'" : value2.toString()) + " ";
         }
         else if((steps.indexOf("whereo") != -1) && !checkThat())
         {
