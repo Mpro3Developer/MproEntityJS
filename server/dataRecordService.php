@@ -34,7 +34,7 @@ if(filter_input(INPUT_POST, 'dataRecord'))
         $lauDB->execute($sqlBuilder->createRefTable());
         $lauDB->execute($sqlBuilder->insertRef());
     }
-    else if($dataRecord->Cod === 2147483647)
+    else if($dataRecord->Cod === 2147483647 || $dataRecord->Remote)
     {
         $lauDB->execute($sqlBuilder->insert());
         echo $lauDB->getLastInsertRowid();

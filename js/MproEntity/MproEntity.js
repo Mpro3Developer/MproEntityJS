@@ -25,6 +25,7 @@ function MproEntity()
     var namesRelation = new Array();
     var namesTransient = new Array();
     this.cod = 2147483647;
+    this.codRemote = 2147483647;
     this.RefObject = null;
     // get name of class
     this.class = this.constructor.name;
@@ -86,7 +87,7 @@ function MproEntity()
         {
             if (! (this[field] instanceof Array) && !(namesTransient[field]))
             {
-                if ((field !== "getAll") && (field !== "cod") && (field !== "class") && (field !== "Save") && (field !== "Delete")
+                if ((field !== "getAll") && (field !== "cod") && (field !== "codRemote") && (field !== "class") && (field !== "Save") && (field !== "Delete")
                         && (field !== "RefObject") && (typeof (this[field]) !== "function"))
                 {
                     dataRequest.Fields.push(field);
@@ -95,6 +96,57 @@ function MproEntity()
         }
         
         return dataRequest;
+    };
+
+    this.DeleteRemote = function(classref, codref)
+    {
+        var dataRemove = new MproEntity.DataReference();
+
+        //getValues();
+
+        if (me.codRemote === 0)
+        {
+            return 0;
+        }
+        else
+        {
+            if (!me.RefObject)
+            {
+                dataRemove.Name = me.class;
+                dataRemove.Cod = me.codRemote;
+            }
+            else
+            {
+                dataRemove.Name = me.class;
+                dataRemove.Cod = me.codRemote;
+                dataRemove.NameRef = me.RefObject.class;
+                dataRemove.CodRef = me.RefObject.codRemote;
+            }
+        }
+
+        var tmpNamesRelation = $.extend(true, [], namesRelation);
+        
+        var ajax = new Ajax();
+        ajax.Url = MproEntity.remoteServer + "/dataRemoveService" + MproEntity.remoteServerTech;
+        ajax.setData({dataRemove: JSON.stringify(dataRemove), user: __projectUser__, cod: __projectCod__});
+        ajax.onSucces(function (data)
+        {
+            //console.log(data); 
+
+            if (joined)
+            {
+                for (var i = 0; i < tmpNamesRelation.length; i++)
+                {
+                    /** @type Array */
+                    var arr = me[tmpNamesRelation[i].NameVar];
+                    for (var j = 0; j < arr.length; j++)
+                    {
+                        arr[j].DeleteRemote(tmpNamesRelation[i].Name, me.codRemote);
+                    }
+                }
+            }
+        });
+        ajax.execute();
     };
 
     this.Delete = function (classref, codref)
@@ -178,6 +230,84 @@ function MproEntity()
                 }
             }
         }
+    };
+
+    this.SaveRemote = function(classref, codref, ix)
+    {
+        var insert = false;
+        var dataRecord = new MproEntity.DataRecord();
+        dataRecord.Cod = me.cod;
+        dataRecord.Remote = true;
+        var auxCod = me.cod;
+        
+        if(!arguments.length && me.codRemote === 2147483647)
+            me.cod = 2147483647;
+        else if(me.codRemote !== 2147483647)
+            me.cod = me.codRemote;
+
+        if (me.cod === 2147483647)
+        {
+            dataRecord.Name = me.class;
+            dataRecord.Fields = getValues();
+            insert = true;
+        }
+        else
+        {
+            dataRecord.Name = me.class;
+            dataRecord.Fields = getValuesUpdates();
+        }
+
+        var tmpNamesRelation = $.extend(true, [], namesRelation);
+        me.cod = auxCod;
+        
+        var ajax = new Ajax();
+        ajax.Url = MproEntity.remoteServer + "/dataRecordService" + MproEntity.remoteServerTech;
+        ajax.setData({dataRecord: JSON.stringify(dataRecord), user: __projectUser__, cod: __projectCod__});
+        ajax.onSucces(function (data)
+        {
+
+            if (insert)
+            {
+                me.codRemote = parseInt(data);
+            }
+
+            if (classref && codref)
+            {
+
+                var dataReference = new MproEntity.DataReference();
+                dataReference.Cod = me.cod;
+                dataReference.Name = me.class;
+                dataReference.NameRef = classref;
+                dataReference.Ix = ix;
+                dataReference.CodRef = codref;
+
+                if (!window.externalEnvironment)
+                {
+                    var ajax = new Ajax();
+                    ajax.Url = MproEntity.remoteServer + "/dataRecordService" + MproEntity.remoteServerTech;
+                    ajax.setData({dataRecord: JSON.stringify(dataReference), user: __projectUser__, cod: __projectCod__});
+                    ajax.onSucces(function (data) {
+                    });
+                    ajax.execute();
+                }
+                else
+                    window.externalEnvironment.Table();
+            }
+
+            if (joined)
+            {
+                for (var i = 0; i < tmpNamesRelation.length; i++)
+                {
+                    /** @type Array */
+                    var arr = me[tmpNamesRelation[i].NameVar];
+                    for (var j = 0; j < arr.length; j++)
+                    {
+                        arr[j].SaveRemote(me.class, me.cod, tmpNamesRelation[i].Ix);
+                    }
+                }
+            }
+        });
+        ajax.execute();
     };
 
     this.Save = function (classref, codref, ix)
@@ -306,7 +436,7 @@ function MproEntity()
         
         for (var field in me)
         {
-            if ((field !== "getAll") && (field !== "class") && (field !== "Save") && (field !== "cod") && (field !== "Delete")
+            if ((field !== "getAll") && (field !== "class") && (field !== "Save") && (field !== "cod") && (field !== "codRemote") && (field !== "Delete")
                     && (field !== "RefObject") && ((typeof (me[field]) !== "function")))
             {
                 if (!(me[field] instanceof Array) && !(namesTransient[field]))
@@ -344,7 +474,7 @@ function MproEntity()
 
         for (var field in me)
         {
-            if ((field !== "getAll") && (field !== "class") && (field !== "Save") && (field !== "cod") && (field !== "Delete")
+            if ((field !== "getAll") && (field !== "class") && (field !== "Save") && (field !== "cod") && (field !== "codRemote") && (field !== "Delete")
                     && (field !== "RefObject") && (typeof (me[field]) !== "function"))
             {
                 if (!(me[field] instanceof Array) && !(namesTransient[field]))
@@ -373,7 +503,7 @@ function MproEntity()
         return string;
     }
 
-    function init()
+    function init(remote)
     {
         if (MproEntity.canCreateTables)
         {
@@ -386,7 +516,7 @@ function MproEntity()
 
                 for (var field in me)
                 {
-                    if ((field !== "getAll") && (field !== "cod") && (field !== "class") && (field !== "Save") && (field !== "Delete")
+                    if ((field !== "getAll") && (field !== "cod") && (field !== "codRemote") && (field !== "class") && (field !== "Save") && (field !== "Delete")
                             && (field !== "RefObject") && (typeof (me[field]) !== "function"))
                     {
                         if (!(me[field] instanceof Array) && !(namesTransient[field]))
@@ -397,21 +527,23 @@ function MproEntity()
                     }
                 }
 
-                if(MproEntity.indexedDB)
+                if(MproEntity.indexedDB && !remote)
                 {
                     var db = new IDBLauDB();
                     db.createIndexes(createTable); 
                 }
-                else if (!window.externalEnvironment)
+                
+                if (!window.externalEnvironment || remote)
                 {
                     var ajax = new Ajax();
-                    ajax.Url = MproEntity.serverUrl + "/createTableService" + MproEntity.serverTech;
+                    ajax.Url = (remote ? MproEntity.remoteServer : MproEntity.serverUrl) + "/createTableService" + (remote ? MproEntity.remoteServerTech : MproEntity.serverTech);
                     ajax.setData({createTable: JSON.stringify(createTable), user: __projectUser__, cod: __projectCod__});
                     ajax.onSucces(function (data) {
                     });
                     ajax.execute();
                 }
-                else
+                
+                if(window.externalEnvironment && !remote)
                 {
                     externalEnvironment.createTableService(JSON.stringify(createTable));
                 }
@@ -437,6 +569,9 @@ function MproEntity()
 
     toNull();
     init();
+    
+    if(MproEntity.remoteServer)
+        init(true);
 }
 
 //MproEntity.getWhere = function(classe, superFilter, objFilter)
@@ -456,6 +591,7 @@ MproEntity.getWhere = function (classe)
         var instance = new classe();
         var relations = new Array();
         var namesTransient = new Array();
+        var remote = false;
         
         namesTransient = MproEntityAnnotations.getTransients(instance);
         relations = MproEntityAnnotations.getReferences(instance);
@@ -475,7 +611,7 @@ MproEntity.getWhere = function (classe)
             {
                 if (! (instance[field] instanceof Array) && !(namesTransient[field]))
                 {
-                    if ((field !== "getAll") && (field !== "cod") && (field !== "class") && (field !== "Save") && (field !== "Delete")
+                    if ((field !== "getAll") && (field !== "cod") && (field !== "codRemote") && (field !== "class") && (field !== "Save") && (field !== "Delete")
                             && (field !== "RefObject") && (typeof (instance[field]) !== "function"))
                     {
                         fields.push(field);
@@ -543,9 +679,12 @@ MproEntity.getWhere = function (classe)
                 callBack = arguments[2];
             else
                 throw new Error("End Callback undefined.");
+            
+            if(arguments[3])
+                remote = arguments[3];
         }
 
-        if(MproEntity.indexedDB)
+        if(MproEntity.indexedDB && !remote)
         {
             MproEntity.getAll(classe, function(data)
             {
@@ -587,10 +726,11 @@ MproEntity.getWhere = function (classe)
                 callBack(res);
             });
         }
-        else if (!window.externalEnvironment)
+        
+        if (!window.externalEnvironment || remote)
         {
             var ajax = new Ajax();
-            ajax.Url = MproEntity.serverUrl + "/dataRequestService" + MproEntity.serverTech;
+            ajax.Url = (remote ? MproEntity.remoteServer : MproEntity.serverUrl) + "/dataRequestService" + (remote ? MproEntity.remoteServerTech : MproEntity.serverTech);
             ajax.setData({dataRequest: JSON.stringify(dataRequest), user: __projectUser__, cod: __projectCod__});
             ajax.onSucces(function (data)
             {
@@ -614,7 +754,10 @@ MproEntity.getWhere = function (classe)
                     /** @type MproEntity */
                     var objTmp = new classe();
 
-                    objTmp.cod = arrM[0];
+                    if(!remote)
+                        objTmp.cod = arrM[0];
+                    else
+                        objTmp.codRemote = arrM[0];
 
                     for (var i = 0; i < fields.length; i++)
                     {
@@ -638,7 +781,10 @@ MproEntity.getWhere = function (classe)
                                 };
                             };
 
-                            MproEntity.getAll(window[fields[i].replace("Ref", "")], funcCall(objTmp, fields, i, callBack, elems, endi, refs.length), "cod = " + arrM[i + 1], undefined, 1, undefined, true, endi);
+                            if(!remote)
+                                MproEntity.getAll(window[fields[i].replace("Ref", "")], funcCall(objTmp, fields, i, callBack, elems, endi, refs.length), "cod = " + arrM[i + 1], undefined, 1, undefined, true, endi);
+                            else
+                                MproEntity.getAllRemote(window[fields[i].replace("Ref", "")], funcCall(objTmp, fields, i, callBack, elems, endi, refs.length), "cod = " + arrM[i + 1], undefined, 1, undefined, true, endi);
                         }
                     }
 
@@ -679,8 +825,10 @@ MproEntity.getWhere = function (classe)
                                 };
                             };
 
-                            MproEntity.getAll(window[relations[k].Name], funcCall2(objTmp, relations, k, callBack, endi, entitiesEqCount[relations[k].Name]), undefined, undefined, undefined, objTmp, true, undefined, entitiesEqCount[relations[k].Name]);
-
+                            if(!remote)
+                                MproEntity.getAll(window[relations[k].Name], funcCall2(objTmp, relations, k, callBack, endi, entitiesEqCount[relations[k].Name]), undefined, undefined, undefined, objTmp, true, undefined, entitiesEqCount[relations[k].Name]);
+                            else
+                                MproEntity.getAllRemote(window[relations[k].Name], funcCall2(objTmp, relations, k, callBack, endi, entitiesEqCount[relations[k].Name]), undefined, undefined, undefined, objTmp, true, undefined, entitiesEqCount[relations[k].Name]);
                         }
                     }
 
@@ -697,7 +845,8 @@ MproEntity.getWhere = function (classe)
             });
             ajax.execute(sync);
         }
-        else
+        
+        if(externalEnvironment && !remote)
         {
             externalEnvironment.requestService(JSON.stringify(dataRequest), function(res)
             {
@@ -801,6 +950,167 @@ MproEntity.getWhere = function (classe)
         return null;
 };
 
+MproEntity.getAllRemote = function(classe, callBack, where, ordBy, limiter, superFilter, sync, end, ix)
+{
+    if (classe === undefined)
+        return null;
+
+    if (where === undefined)
+        where = "";
+
+    if ((ordBy === undefined) || (ordBy === ""))
+        ordBy = "cod asc";
+
+    if (sync === undefined)
+        sync = true;
+
+    if (end === undefined)
+        end = true;
+
+    var instance = new classe();
+    var relations = new Array();
+    var namesTransient = new Array();
+    var fields = new Array();
+    var elems = new Array();
+    var sql = "";
+
+    namesTransient = MproEntityAnnotations.getTransients(instance);
+
+    for (var field in instance)
+    {
+        if (!(instance[field] instanceof Array) && !(namesTransient[field]))
+        {
+            if ((field !== "getAll") && (field !== "cod") && (field !== "codRemote") && (field !== "class") && (field !== "Save") && (field !== "Delete")
+                    && (field !== "RefObject") && (typeof (instance[field]) !== "function"))
+            {
+                fields.push(field);
+            }
+        }
+    }
+
+    relations = MproEntityAnnotations.getReferences(instance);
+
+    var dataRequest = new MproEntity.DataRequest();
+    dataRequest.Name = instance.class;
+    dataRequest.Where = where;
+    dataRequest.OrderBy = ordBy;
+
+    if (superFilter !== undefined)
+    {
+        dataRequest.NameRef = superFilter.class;
+        dataRequest.CodRef = superFilter.codRemote;
+        if (ix !== undefined)
+            dataRequest.Ix = ix;
+    }
+
+    if (limiter && limiter.length && (limiter.length === 2))
+    {
+        dataRequest.Limiter[0] = limiter[0];
+        dataRequest.Limiter[1] = limiter[1];
+        sql += " LIMIT " + limiter[0] + ", " + limiter[1];
+    }
+    
+    var ajax = new Ajax();
+    ajax.Url = MproEntity.serverUrl + "/dataRequestAllService" + MproEntity.serverTech;
+    ajax.setData({dataRequest: JSON.stringify(dataRequest), user: __projectUser__, cod: __projectCod__});
+    ajax.onSucces(function (data)
+    {
+        //console.log(data);
+        /** @type Array */
+        var arrTmp = JSON.parse(data);
+        var refs = [];
+
+        for (var j = 0; j < arrTmp.length; j++)
+        {
+            refs = [];
+            /** @type Array */
+            var arrM = arrTmp[j];
+            /** @type MproEntity */
+            var objTmp = new classe();
+
+            objTmp.codRemote = arrM[0];
+
+            for (var i = 0; i < fields.length; i++)
+            {
+                if (fields[i].indexOf("Ref") === -1)
+                    objTmp[fields[i]] = arrM[i + 1];
+                else
+                {
+                    refs.push(fields[i]);
+                    var endi = false;
+                    if (j >= arrTmp.length - 1)
+                        endi = true;
+
+                    var funcCall = function (objTmp, fields, i, callBack, elems, endi, len) {
+                        return function (ret)
+                        {
+                            if (ret)
+                                objTmp[fields[i]] = ret[0];
+
+                            if (callBack && endi && refs.length === len)
+                                callBack(elems);
+                        };
+                    };
+
+                    MproEntity.getAllRemote(window[fields[i].replace("Ref", "")], funcCall(objTmp, fields, i, callBack, elems, endi, refs.length), "cod = " + arrM[i + 1], undefined, 1, undefined, true, endi);
+                }
+            }
+
+            if (relations.length > 0)
+            {
+                var entitiesEqCount = [];
+                for (var k = 0; k < relations.length; k++)
+                {
+                    var endi = false;
+
+                    if (entitiesEqCount[relations[k].Name] !== undefined)
+                        entitiesEqCount[relations[k].Name] += 1;
+                    else
+                        entitiesEqCount[relations[k].Name] = 1;
+
+
+                    if (k >= relations.length - 1 && j >= arrTmp.length - 1)
+                        endi = true;
+
+                    var funcCall2 = function (objTmp, relations, k, callBack, endi, entityIx)
+                    {
+                        return function (objR, stop)
+                        {
+                            for (var i = 0; i < objR.length; i++)
+                            {
+                                objR[i].RefObject = objTmp;
+                            }
+
+                            if (objR !== null)
+                            {
+                                objTmp[relations[k].NameVar] = objR;
+                            }
+                            if (callBack && endi)
+                                setTimeout(function ()
+                                {
+                                    callBack(elems);
+                                }, 500);
+                        };
+                    };
+
+                    MproEntity.getAllRemote(window[relations[k].Name], funcCall2(objTmp, relations, k, callBack, endi, entitiesEqCount[relations[k].Name]), undefined, undefined, undefined, objTmp, true, undefined, entitiesEqCount[relations[k].Name]);
+                }
+            }
+
+            elems.push(objTmp);
+        }
+
+        if (!(relations.length !== 0 || refs.length !== 0))
+        {
+            callBack(elems, end);
+        }
+
+        if (arrTmp.length === 0)
+            callBack(elems, end);
+    });
+    ajax.execute(sync);
+};
+
 MproEntity.getAll = function (classe, callBack, where, ordBy, limiter, superFilter, sync, end, ix)
 {
 
@@ -832,7 +1142,7 @@ MproEntity.getAll = function (classe, callBack, where, ordBy, limiter, superFilt
     {
         if (!(instance[field] instanceof Array) && !(namesTransient[field]))
         {
-            if ((field !== "getAll") && (field !== "cod") && (field !== "class") && (field !== "Save") && (field !== "Delete")
+            if ((field !== "getAll") && (field !== "cod") && (field !== "codRemote") && (field !== "class") && (field !== "Save") && (field !== "Delete")
                     && (field !== "RefObject") && (typeof (instance[field]) !== "function"))
             {
                 fields.push(field);
@@ -1088,6 +1398,8 @@ MproEntity.query = function(c)
     return new Query(c);
 };
 
+MproEntity.remoteServer = null;
+MproEntity.remoteServerTech = null;
 MproEntity.serverUrl = "";
 MproEntity.serverTech = "";
 MproEntity.serverSeted = false;
@@ -1101,6 +1413,12 @@ MproEntity.setServer = function (url, tec)
     MproEntity.serverUrl = url;
     MproEntity.serverTech = (tec == undefined ? "" : ("." + tec));
     MproEntity.serverSeted = true;
+};
+
+MproEntity.setRemoteServer = function(url, tec)
+{
+    MproEntity.remoteServer = url;
+    MproEntity.remoteServerTech = (tec == undefined ? "" : ("." + tec));
 };
 
 MproEntity.enableWebSQL = function()
@@ -1132,6 +1450,7 @@ MproEntity.DataRecord = function ()
     this.Cod = 2147483647;
     this.Fields = [];
     this.Data = [];
+    this.Remote = false;
 };
 
 MproEntity.DataReference = function ()

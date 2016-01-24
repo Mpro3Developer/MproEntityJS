@@ -73,6 +73,7 @@ function LauDB()
                         callback(result.rows);
                 },
                 function(transaction, error){
+                    if(LauDB.debug)
                     console.error("L.A.U Query error: " + error.message + " :: cmd-> " + sql);
                 }
             );
@@ -89,6 +90,7 @@ function LauDB()
                     
                 },
                 function(transaction, error){
+                    if(LauDB.debug)
                     console.error("L.A.U Query error: " + error.message + " :: cmd-> " + cmd);
                 }
             );
@@ -97,6 +99,7 @@ function LauDB()
     
     this.row = function(row, table, callback)
     {
+        if(LauDB.debug)
         console.error("Not implemented yet ...");
     };
     
@@ -106,6 +109,7 @@ function LauDB()
         {
             transaction.executeSql(cmd, null, null, function(transaction, error)
             {
+                if(LauDB.debug)
                 console.error("L.A.U Query error: " + error.message + " :: cmd-> " + cmd);
             });
         });
@@ -121,21 +125,27 @@ function LauDB()
     
     this.rowCount = function()
     {
+        if(LauDB.debug)
         console.error("Not implemented yet ...");
     };
     
     this.prox = function()
     {
+        if(LauDB.debug)
         console.error("Not implemented yet ...");
     };
     
     this.getActualObjectRow = function()
     {
+        if(LauDB.debug)
         console.error("Not implemented yet ...");
     };
     
     this.close = function()
     {
+        if(LauDB.debug)
         console.error("Is not necessary ...");
     };
-}
+};
+
+LauDB.debug = false;

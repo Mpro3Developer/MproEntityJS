@@ -147,7 +147,7 @@ function Query(t)
         steps.push("like");
 
         return this;
-    }
+    };
 
     this.between = function(value1, value2)
     {
@@ -322,7 +322,7 @@ function Query(t)
         steps.push("or");
 
         return this;
-    }
+    };
 
     function oro(cl, field, objectInfo, obj)
     {
@@ -345,7 +345,7 @@ function Query(t)
         this.objectInfo.OrderBy = " " + field;
         steps.push("order");
         return this;
-    }
+    };
 
     this.asc = function()
     {
@@ -357,7 +357,7 @@ function Query(t)
             throw new Error("(asc) only can be called after (orderBy)");
         steps.push("asc");
         return this;
-    }
+    };
     
     this.desc = function()
     {
@@ -369,7 +369,7 @@ function Query(t)
             throw new Error("(desc) only can be called after (orderBy)");
         steps.push("desc");
         return this;
-    }
+    };
 
     this.limit = function(limitInf, limitSup)
     {
@@ -378,7 +378,7 @@ function Query(t)
         this.objectInfo.Limiter[1] = limitSup;
         steps.push("limit");
         return this;
-    }
+    };
 
     function checkTuples()
     {
@@ -416,6 +416,18 @@ function Query(t)
             this.objectInfo.Where = queryString;
             this.objectInfo.IndexWhere = indexString;
             MproEntity.getWhere(t, this.objectInfo, callback);
+        }
+        else
+            throw new Error("Your query appears incomplete. Make sure you are not missing after (where, or, and) one comparator (like, equal, notEqual, bigger, less, between) or missing after (orderBy) one order (asc, desc)");
+    };
+    
+    this.executeRemote = function(callback)
+    {
+        if(checkTuples())
+        {
+            this.objectInfo.Where = queryString;
+            this.objectInfo.IndexWhere = indexString;
+            MproEntity.getWhere(t, this.objectInfo, callback, true);
         }
         else
             throw new Error("Your query appears incomplete. Make sure you are not missing after (where, or, and) one comparator (like, equal, notEqual, bigger, less, between) or missing after (orderBy) one order (asc, desc)");

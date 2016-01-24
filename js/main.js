@@ -4,6 +4,8 @@ MproEntity.indexedDBVersion = 13;*/
 
 //MproEntity.enableWebSQL();
 
+//MproEntity.setRemoteServer("http://localhost/MproEntityJS/server", "php");
+
 /*
  * Menu Buttons
  */
