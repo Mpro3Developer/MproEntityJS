@@ -78,6 +78,9 @@ function IDBLauDB()
         });
     };
 
+    /**
+     * TODO
+     */
     this.selectWhere = function() 
     {
         

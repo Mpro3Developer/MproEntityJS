@@ -4,8 +4,11 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
             <file>file:/var/www/html/MproEntityJS/js/MproEntity/MproEntity.js</file>
-            <file>file:/var/www/html/MproEntityJS/index.html</file>
-            <file>file:/var/www/html/MproEntityJS/js/MproEntity/SQLBuilder.js</file>
+            <file>file:/var/www/html/MproEntityJS/js/main.js</file>
+            <file>file:/var/www/html/MproEntityJS/server/dataRecordService.php</file>
+            <file>file:/var/www/html/MproEntityJS/server/utils/SQLBuilderSQLite.php</file>
+            <file>file:/var/www/html/MproEntityJS/server/auth.php</file>
+            <file>file:/var/www/html/MproEntityJS/js/MproEntity/MproEntityStatics.js</file>
         </group>
     </open-files>
 </project-private>

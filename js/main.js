@@ -1,10 +1,21 @@
-
-/*MproEntity.enableIndexedDB();
+/*
+MproEntity.enableIndexedDB();
 MproEntity.indexedDBVersion = 13;*/
 
 //MproEntity.enableWebSQL();
 
-//MproEntity.setRemoteServer("http://localhost/MproEntityJS/server", "php");
+/**
+ * TODO CREATE DBSOURCE REMOTE AND FORMCREATOR REMOTE
+ */
+//MproEntity.setRemoteServer("http://localhost/RemoteServer", "php");
+
+/**
+ * Initial config
+ */
+
+MproEntity.addUser("site", "123456");
+//MproEntity.auth("site", "123456");
+
 
 /*
  * Menu Buttons

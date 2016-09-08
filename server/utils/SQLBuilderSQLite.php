@@ -25,6 +25,11 @@ class SQLBuilderSQLite implements SQLBuilder
 {
     private $obj;
     
+    public function auth($user, $key)
+    {
+        return "SELECT * FROM EntityUserAuth WHERE User____ = '".$user."' AND CryptKey____ = '".$key."';";
+    }
+    
     public function delete() 
     {
         $sqls = array();
@@ -138,7 +143,12 @@ class SQLBuilderSQLite implements SQLBuilder
 
     public function createTable() 
     {
-        return "CREATE TABLE ".$this->obj->Name." (cod INTEGER PRIMARY KEY)";
+        if($this->obj->Name == "EntityUserAuth")
+            return "CREATE TABLE IF NOT EXISTS ".$this->obj->Name." (cod INTEGER PRIMARY KEY, User____ TEXT UNIQUE, CryptKey____ TEXT)";
+        else
+        {
+            return "CREATE TABLE IF NOT EXISTS ".$this->obj->Name." (cod INTEGER PRIMARY KEY); ALTER TABLE EntityUserAuth ADD ".$this->obj->Name." NUMBER;";
+        }
     }
 
     public function alterTable($res)
@@ -176,7 +186,7 @@ class SQLBuilderSQLite implements SQLBuilder
             $canTempDrop = true;
         }
         
-        if($canTempDrop)
+        if($canTempDrop && $this->obj->Name != "EntityUserAuth")
         {
             $sqlsAlter[] = "CREATE TABLE back_".$this->obj->Name." (cod INTEGER PRIMARY KEY);";
             for($i = 0; $i < count($fieldsFromDB); $i++)
