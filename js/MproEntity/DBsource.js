@@ -4,7 +4,7 @@
  * Classe para Objeto de Fonte de dados
  * @return {DBsource}
  */
-function DBsource(entity, max, begin, where, ord)
+function DBsource(entity, max, begin, where, ord, asc)
 {
     var __linkedObjs = new Array();
     var __max = max;
@@ -19,6 +19,7 @@ function DBsource(entity, max, begin, where, ord)
     this.Where = where;
     this.Rules = [];
     this.OrdBy = ord;
+    this.Asc = asc;
 
     function dispatch(me)
     {
@@ -28,7 +29,26 @@ function DBsource(entity, max, begin, where, ord)
             {
                 //me.Data = MproEntity.getAll(me.EntityName, [__begin, __max], undefined, me.Where, me.OrdBy);
                 //showLoading();
-                MproEntity.getAll(me.EntityName, function (data)
+
+                // pass for Query
+                var query = MproEntity.query(me.EntityName);
+
+                if(me.Where)
+                    query.where(me.Where);
+
+                if(me.OrdBy)
+                {
+                    query.orderBy(me.OrdBy);
+
+                    if(me.Asc)
+                        query.asc();
+                    else
+                        query.desc();
+                }
+
+                query.limit(__begin, __max);
+
+                query.execute(function (data)
                 {
                     me.Data = data;
                     addDataToModel(me);
@@ -37,7 +57,7 @@ function DBsource(entity, max, begin, where, ord)
                         __funcMouseListener[i]();
                     //hideLoading();
                     //magic();
-                }, me.Where, me.OrdBy, [__begin, __max], undefined);
+                });
             }, 100);
         }
         else
