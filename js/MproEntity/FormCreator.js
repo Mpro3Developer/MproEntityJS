@@ -46,6 +46,7 @@ function FormCreator(classe, elem)
     {
         var tmp = $(this.Elem.children()[i]);
         if (tmp.hasClass("GInput") ||
+                tmp.hasClass("GInputImage") ||
                 tmp.hasClass("GTextArea") ||
                 tmp.hasClass("GTextEditor") ||
                 tmp.hasClass("GCheckBox") ||
@@ -91,6 +92,16 @@ function FormCreator(classe, elem)
                     if (elemC.hasClass("GInput"))
                     {
                         elemC.val(this.Source[clearTag]);
+                    }
+                    else if (elemC.hasClass("GInputImage"))
+                    {
+                        // detach events
+                        elemC.off("change");
+                        // clear
+                        elemC.val("");
+                        $('#' + this.Source.class + clearTag + "TAG").remove();
+                        // get image in base 64
+                        elemC.after('<p id="' + this.Source.class + clearTag + 'TAG" class="FormCreatorPhoto"><img id="' + this.Source.class + clearTag + '" src="' + this.Source[clearTag] + '" class="img-responsive"></p>');
                     }
                     else if (elemC.hasClass("GTextArea"))
                     {
@@ -145,6 +156,7 @@ function FormCreator(classe, elem)
     {
         this.Source = new this.Classe();
         var focus = false;
+        var Source = this.Source;
 
         // gogogo
         for (var i = 0; i < this.ElemsClone.length; i++)
@@ -162,6 +174,31 @@ function FormCreator(classe, elem)
                     if (elemC.hasClass("GInput"))
                     {
                         elemC.val("");
+                    }
+                    else if (elemC.hasClass("GInputImage"))
+                    {
+                        // detach events
+                        elemC.off("change");
+                        // clear
+                        elemC.val("");
+                        $('#' + Source.class + clearTag + "TAG").remove();
+                        // attach new events
+                        elemC.on("change", function(e)
+                        {
+                            if (this.files && this.files[0])
+                            {
+                              // remove old
+                              $('#' + Source.class + clearTag + "TAG").remove();
+                              // add new
+                              var FR = new FileReader();
+                              FR.addEventListener("load", function(e)
+                              {
+                                  var img = elemC.after('<p id="' + Source.class + clearTag + 'TAG" class="FormCreatorPhoto"><img id="' + Source.class + clearTag + '" src="" class="img-responsive"></p>');
+                                  document.getElementById(Source.class + clearTag).src = e.target.result;
+                              });
+                              FR.readAsDataURL(this.files[0]);
+                            }
+                        });
                     }
                     else if (elemC.hasClass("GTextArea"))
                     {
@@ -219,6 +256,11 @@ function FormCreator(classe, elem)
                     if (elemC.hasClass("GInput"))
                     {
                         this.Source[clearTag] = elemC.val();
+                    }
+                    if (elemC.hasClass("GInputImage"))
+                    {
+                        // get image base 64
+                        this.Source[clearTag] = $("#" + this.Source.class + clearTag).attr('src');
                     }
                     else if (elemC.hasClass("GTextArea"))
                     {
