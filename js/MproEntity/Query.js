@@ -23,10 +23,16 @@ function Query(t)
     var indexString = "";
     var fieldTmp = "";
 
-    this.newInstanceOfT = function()
+    this.newInstanceOfT = function(all)
     {
         var ft = new t();
-        var fieldsInfo = ft.getInfo();
+        var fieldsInfo = null;
+
+        if(!all)
+          fieldsInfo = ft.getInfo();
+        else
+          fieldsInfo = ft.getInfoAll();
+
         this.objectInfo = fieldsInfo;
         return ft;
     };
@@ -66,6 +72,15 @@ function Query(t)
         }
         return obj;
     }
+
+    /**
+     * This function active base64 data load from query
+     **/
+    this.base64 = function()
+    {
+        this.newInstanceOfT(true);
+        return this;
+    };
 
     this.where = function(field)
     {
