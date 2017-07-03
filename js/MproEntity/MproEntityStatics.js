@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2016 Matheus Castello
  *
  * There is no peace only passion
@@ -33,7 +33,7 @@ MproEntity.auth = function(user, key)
     }
     else // websql or bridge engine
     {
-        
+
     }
     MproEntity.authDb = true;
 };
@@ -60,7 +60,7 @@ MproEntity.addUser = function(user, key)
 };
 
 /**
- * 
+ *
  * @param {Entity} classe
  * @returns {unresolved}
  */
@@ -75,11 +75,13 @@ MproEntity.getWhere = function (classe)
         var instance = new classe();
         var relations = new Array();
         var namesTransient = new Array();
+        var namesBase64 = new Array();
         var remote = false;
-        
+
         namesTransient = MproEntityAnnotations.getTransients(instance);
         relations = MproEntityAnnotations.getReferences(instance);
-        
+        namesBase64 = MproEntityAnnotations.getBase64(instance);
+
         if(arguments[1].constructor != MproEntity.DataRequest)
         {
             var logics = [];
@@ -93,7 +95,7 @@ MproEntity.getWhere = function (classe)
 
             for (var field in instance)
             {
-                if (! (instance[field] instanceof Array) && !(namesTransient[field]))
+                if (!(instance[field] instanceof Array) && !(namesTransient[field]) && !(namesBase64[field]))
                 {
                     if ((field !== "getAll") && (field !== "cod") && (field !== "codRemote") && (field !== "class") && (field !== "Save") && (field !== "Delete")
                             && (field !== "RefObject") && (typeof (instance[field]) !== "function"))
@@ -163,7 +165,7 @@ MproEntity.getWhere = function (classe)
                 callBack = arguments[2];
             else
                 throw new Error("End Callback undefined.");
-            
+
             if(arguments[3])
                 remote = arguments[3];
         }
@@ -175,42 +177,42 @@ MproEntity.getWhere = function (classe)
                 var res = data.filter(function(i){ return eval(dataRequest.IndexWhere); });
                 var pts = [];
                 var fid = "";
-                
+
                 if(dataRequest.OrderBy != "")
                 {
                     pts = dataRequest.OrderBy.split(" ");
                     fid = pts[1];
                 }
-                
+
                 function compareAsc(a, b)
                 {
                     if (a[fid] < b[fid])
                         return -1;
                     else if (a[fid] > b[fid])
                         return 1;
-                    else 
+                    else
                         return 0;
                 }
-                
+
                 function compareDesc(a, b)
                 {
                     if (a[fid] < b[fid])
                         return 1;
                     else if (a[fid] > b[fid])
                         return -1;
-                    else 
+                    else
                         return 0;
                 }
-                
+
                 if(pts.length && pts[2] == 'ASC')
                     res = res.sort(compareAsc);
                 else if(pts.length && pts[2] == 'DESC')
                     res = res.sort(compareDesc);
-                
+
                 callBack(res);
             });
         }
-        
+
         if (!window.externalEnvironment || remote)
         {
             var ajax = new Ajax();
@@ -329,7 +331,7 @@ MproEntity.getWhere = function (classe)
             });
             ajax.execute(sync);
         }
-        
+
         if(externalEnvironment && !remote)
         {
             externalEnvironment.requestService(JSON.stringify(dataRequest), function(res)
@@ -424,7 +426,7 @@ MproEntity.getWhere = function (classe)
                 }
 
                 if (arrTmp.length === 0)
-                    callBack(elems, end); 
+                    callBack(elems, end);
             });
         }
 
@@ -493,7 +495,7 @@ MproEntity.getAllRemote = function(classe, callBack, where, ordBy, limiter, supe
         dataRequest.Limiter[1] = limiter[1];
         sql += " LIMIT " + limiter[0] + ", " + limiter[1];
     }
-    
+
     var ajax = new Ajax();
     ajax.Url = MproEntity.serverUrl + "/dataRequestAllService" + MproEntity.serverTech;
     ajax.setData({dataRequest: JSON.stringify(dataRequest), user: __projectUser__, cod: __projectCod__});
@@ -616,15 +618,17 @@ MproEntity.getAll = function (classe, callBack, where, ordBy, limiter, superFilt
     var instance = new classe();
     var relations = new Array();
     var namesTransient = new Array();
+    var namesBase64 = new Array();
     var fields = new Array();
     var elems = new Array();
     var sql = "";
 
     namesTransient = MproEntityAnnotations.getTransients(instance);
+    namesBase64 = MproEntityAnnotations.getBase64(instance);
 
     for (var field in instance)
     {
-        if (!(instance[field] instanceof Array) && !(namesTransient[field]))
+        if (!(instance[field] instanceof Array) && !(namesTransient[field]) && !(namesBase64[field]))
         {
             if ((field !== "getAll") && (field !== "cod") && (field !== "codRemote") && (field !== "class") && (field !== "Save") && (field !== "Delete")
                     && (field !== "RefObject") && (typeof (instance[field]) !== "function"))
@@ -668,7 +672,7 @@ MproEntity.getAll = function (classe, callBack, where, ordBy, limiter, superFilt
                     res[i] = MproEntity.extend(window[dataRequest.Name], res[i]);
                 }
                 callBack(res);
-            }); 
+            });
         });
     }
     else if (!window.externalEnvironment)
@@ -870,7 +874,7 @@ MproEntity.getAll = function (classe, callBack, where, ordBy, limiter, superFilt
             }
 
             if (arrTmp.length === 0)
-                callBack(elems, end); 
+                callBack(elems, end);
         });
     }
 

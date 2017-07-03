@@ -1,7 +1,7 @@
 
-/* 
+/*
  * Copyright (C) 2015 Matheus Castello
- * 
+ *
  *  There is no peace only passion
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,6 +24,7 @@ function MproEntity()
     var joined = false;
     var namesRelation = new Array();
     var namesTransient = new Array();
+    var namesBase64 = new Array();
     this.cod = 2147483647;
     this.codRemote = 2147483647;
     this.RefObject = null;
@@ -35,7 +36,7 @@ function MproEntity()
      */
     if(MproEntity.authDb)
     {
-        
+
     }
 
     /*
@@ -72,8 +73,9 @@ function MproEntity()
     namesRelation = MproEntityAnnotations.getReferences(this);
     if(namesRelation.length > 0)
         joined = true;
-    
+
     namesTransient = MproEntityAnnotations.getTransients(this);
+    namesBase64 = MproEntityAnnotations.getBase64(this);
 
     if (!MproEntity.serverSeted)
     {
@@ -84,7 +86,38 @@ function MproEntity()
     if (this.class === undefined)
         this.class = "";
 
+    /**
+     * This method is only used in instance for Query class
+     * All other methods get field information all again TODO user this instead
+     * This not get base64 fields
+     **/
     this.getInfo = function()
+    {
+        var dataRequest = new MproEntity.DataRequest();
+        //var namesTransient = MproEntityAnnotations.getTransients(this);
+
+        dataRequest.Name = this.class;
+
+        for (var field in this)
+        {
+            if (! (this[field] instanceof Array) && !(namesTransient[field]) && !(namesBase64[field]))
+            {
+                if ((field !== "getAll") && (field !== "cod") && (field !== "codRemote") && (field !== "class") && (field !== "Save") && (field !== "Delete")
+                        && (field !== "RefObject") && (typeof (this[field]) !== "function"))
+                {
+                    dataRequest.Fields.push(field);
+                }
+            }
+        }
+
+        return dataRequest;
+    };
+
+    /**
+     * This method is only used in instance for Query class
+     * All other methods get field information all again STUPID PROGRAMMER I AM
+     **/
+    this.getInfoAll = function()
     {
         var dataRequest = new MproEntity.DataRequest();
         //var namesTransient = MproEntityAnnotations.getTransients(this);
@@ -102,7 +135,7 @@ function MproEntity()
                 }
             }
         }
-        
+
         return dataRequest;
     };
 
@@ -133,13 +166,13 @@ function MproEntity()
         }
 
         var tmpNamesRelation = $.extend(true, [], namesRelation);
-        
+
         var ajax = new Ajax();
         ajax.Url = MproEntity.remoteServer + "/dataRemoveService" + MproEntity.remoteServerTech;
         ajax.setData({dataRemove: JSON.stringify(dataRemove), user: __projectUser__, cod: __projectCod__});
         ajax.onSucces(function (data)
         {
-            //console.log(data); 
+            //console.log(data);
 
             if (joined)
             {
@@ -193,7 +226,7 @@ function MproEntity()
                 db.delete(me.cod, function()
                 {
                     me.cod = null;
-                }); 
+                });
             });
         }
         else if (!window.externalEnvironment)
@@ -203,7 +236,7 @@ function MproEntity()
             ajax.setData({dataRemove: JSON.stringify(dataRemove), user: __projectUser__, cod: __projectCod__});
             ajax.onSucces(function (data)
             {
-                //console.log(data); 
+                //console.log(data);
 
                 if (joined)
                 {
@@ -247,7 +280,7 @@ function MproEntity()
         dataRecord.Cod = me.cod;
         dataRecord.Remote = true;
         var auxCod = me.cod;
-        
+
         if(!arguments.length && me.codRemote === 2147483647)
             me.cod = 2147483647;
         else if(me.codRemote !== 2147483647)
@@ -267,7 +300,7 @@ function MproEntity()
 
         var tmpNamesRelation = $.extend(true, [], namesRelation);
         me.cod = auxCod;
-        
+
         var ajax = new Ajax();
         ajax.Url = MproEntity.remoteServer + "/dataRecordService" + MproEntity.remoteServerTech;
         ajax.setData({dataRecord: JSON.stringify(dataRecord), user: __projectUser__, cod: __projectCod__});
@@ -346,7 +379,7 @@ function MproEntity()
                 db.insert(JSON.parse(JSON.stringify(me)), function(id)
                 {
                     me.cod = id;
-                }); 
+                });
             });
         }
         else if (!window.externalEnvironment)
@@ -408,7 +441,7 @@ function MproEntity()
                 {
                     me.cod = id;
                 }
-                
+
                 if (classref && codref)
                 {
                     var dataReference = new MproEntity.DataReference();
@@ -433,7 +466,7 @@ function MproEntity()
                             arr[j].Save(me.class, me.cod, tmpNamesRelation[i].Ix);
                         }
                     }
-                } 
+                }
             });
         }
     };
@@ -441,7 +474,7 @@ function MproEntity()
     function getValues()
     {
         var string = "";
-        
+
         for (var field in me)
         {
             if ((field !== "getAll") && (field !== "class") && (field !== "Save") && (field !== "cod") && (field !== "codRemote") && (field !== "Delete")
@@ -538,9 +571,9 @@ function MproEntity()
                 if(MproEntity.indexedDB && !remote)
                 {
                     var db = new IDBLauDB();
-                    db.createIndexes(createTable); 
+                    db.createIndexes(createTable);
                 }
-                
+
                 if ((!window.externalEnvironment && !MproEntity.indexedDB) || remote)
                 {
                     var ajax = new Ajax();
@@ -550,7 +583,7 @@ function MproEntity()
                     });
                     ajax.execute();
                 }
-                
+
                 if(window.externalEnvironment && !remote)
                 {
                     externalEnvironment.createTableService(JSON.stringify(createTable));
@@ -577,7 +610,7 @@ function MproEntity()
 
     toNull();
     init();
-    
+
     if(MproEntity.remoteServer)
         init(true);
 };

@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2015 matheus
  *
  * There is no peace only passion
@@ -19,22 +19,53 @@
 
 window.MproEntityAnnotations = {};
 
+MproEntityAnnotations.getBase64 = function(obj)
+{
+  var mapTransients = [];
+  /*
+   * Transient annotations
+   */
+
+  if(!obj.class)
+      throw new Error("Instance of object is not an MproEntity.");
+
+  var strClass = window[obj.class].toString();
+  var annotations = strClass.locations("@Base64");
+  for(var i = 0; i < annotations.length; i++)
+  {
+      var varName = "";
+
+      varName =   strClass.substring
+                  (
+                      annotations[i] + (strClass.substring(annotations[i], strClass.length).indexOf("this")),
+                      annotations[i] + (strClass.substring(annotations[i], strClass.length).indexOf("="))
+                  )
+                  .replace("this.", "")
+                  .trim();
+
+      if(varName !== "")
+          mapTransients[varName] = true;
+  }
+
+  return mapTransients;
+}
+
 MproEntityAnnotations.getTransients = function(obj)
 {
     var mapTransients = [];
     /*
      * Transient annotations
      */
-    
+
     if(!obj.class)
         throw new Error("Instance of object is not an MproEntity.");
-    
+
     var strClass = window[obj.class].toString();
     var annotations = strClass.locations("@Transient");
     for(var i = 0; i < annotations.length; i++)
     {
         var varName = "";
-        
+
         varName =   strClass.substring
                     (
                         annotations[i] + (strClass.substring(annotations[i], strClass.length).indexOf("this")),
@@ -42,11 +73,11 @@ MproEntityAnnotations.getTransients = function(obj)
                     )
                     .replace("this.", "")
                     .trim();
-            
+
         if(varName !== "")
             mapTransients[varName] = true;
     }
-    
+
     return mapTransients;
 };
 
@@ -56,10 +87,10 @@ MproEntityAnnotations.getReferences = function(obj)
     /*
      * Reference annotations
      */
-    
+
     if(!obj.class)
-        throw new Error("Instance of object is not an MproEntity."); 
-    
+        throw new Error("Instance of object is not an MproEntity.");
+
     var strClass = window[obj.class].toString();
     var annotations = strClass.locations("@Reference");
     var mapRef = [];
@@ -68,19 +99,19 @@ MproEntityAnnotations.getReferences = function(obj)
         var ref = {};
         ref.Name =  strClass.substring
                     (
-                        annotations[i], 
+                        annotations[i],
                         annotations[i] + (strClass.substring(annotations[i], strClass.length).indexOf("this"))
                     )
                     .replace(/.*\@Reference<|\>/gi, "")
                     .trim();
-        
+
         if(mapRef[ref.Name])
             mapRef[ref.Name] += 1;
         else
             mapRef[ref.Name] = 1;
-        
+
         ref.Ix = mapRef[ref.Name];
-        
+
         ref.NameVar =   strClass.substring
                         (
                             annotations[i] + (strClass.substring(annotations[i], strClass.length).indexOf("this")),
@@ -88,19 +119,19 @@ MproEntityAnnotations.getReferences = function(obj)
                         )
                         .replace("this.", "")
                         .trim();
-        
+
         if(!window[ref.Name])
             throw new Error(ref.Name + " is not an MproEntity or is not load.");
-        
+
         if(!(obj[ref.NameVar] instanceof Array))
             throw new Error(obj.class + "." + ref.NameVar + " is not a collection.");
-        
+
         refs.push(ref);
     }
     return refs;
 };
 
-String.prototype.locations = function (substring) 
+String.prototype.locations = function (substring)
 {
     var a = [], i = -1;
     while ((i = this.indexOf(substring, i + 1)) >= 0)
