@@ -4,7 +4,7 @@
  * Vars and controls for Book Div
  */
 
-var dbBook = new DBsource(Book, 100, 0, '', 'Name asc');
+var dbBook = new DBsource(Book, 100, 0, '', 'Name');
 var repeaterBook = new Repeater("#bookList");
 var formBook = new FormCreator(Book, "#bookForm");
 

@@ -3,7 +3,7 @@
  * Vars and controls for User Div
  */
 
-var dbUser = new DBsource(User, 100, 0, '', 'Name asc');
+var dbUser = new DBsource(User, 100, 0, '', 'Name');
 var repeaterUser = new Repeater("#userList");
 var formUser = new FormCreator(User, "#userForm");
 

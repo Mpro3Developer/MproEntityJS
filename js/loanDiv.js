@@ -1,6 +1,6 @@
 
 var repeaterLoan = new Repeater("#loanList");
-var dbLoan = new DBsource(Loan, 100, 0, '', 'DATE(LoanDate) asc');
+var dbLoan = new DBsource(Loan, 100, 0, '', 'DATE(LoanDate)');
 var formLoan = new FormCreator(Loan, "#loanForm");
 var comboUsers = new Combobox();
 var listBooks = new List();
