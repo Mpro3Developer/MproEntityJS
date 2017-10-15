@@ -148,7 +148,8 @@ function Query(t)
         if(steps.length > 0 && (steps[steps.length -1] == "where" || checkOperator()) && (steps.indexOf("whereo") == -1))
         {
             queryString += " LIKE " + (typeof(value) == "string" ? "'%" + value.toString() + "%'" : value.toString()) + " ";
-            indexString += " .indexOf( " + (typeof(value) == "string" ? "'" + value.toString() + "'" : value.toString()) + ") != -1 ";
+            indexString += " .indexOf( " + (typeof(value) == "string" ? "'" + value.toString() + "'" : value.toString()) + ") != -1 " +
+                            " || i." + fieldTmp + ".indexOf(" + (typeof(value) == "string" ? "'" + value.toString().toUpperCase() + "'" : value.toString().toUpperCase())  + ") != -1";
         }
         else if((steps.indexOf("whereo") != -1) && !checkThat())
         {
