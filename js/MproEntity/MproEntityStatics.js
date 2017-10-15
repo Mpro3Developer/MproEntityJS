@@ -332,9 +332,9 @@ MproEntity.getWhere = function (classe)
             ajax.execute(sync);
         }
 
-        if(externalEnvironment && !remote)
+        if(window.externalEnvironment && !remote)
         {
-            externalEnvironment.requestService(JSON.stringify(dataRequest), function(res)
+            window.externalEnvironment.requestService(JSON.stringify(dataRequest), function(res)
             {
                 /** @type Array */
                 var arrTmp = res;
@@ -780,7 +780,7 @@ MproEntity.getAll = function (classe, callBack, where, ordBy, limiter, superFilt
     else
     {
         /** @type Array */
-        externalEnvironment.requestAllService(JSON.stringify(dataRequest), function(res)
+        window.externalEnvironment.requestAllService(JSON.stringify(dataRequest), function(res)
         {
             var arrTmp = res;
             var refs = [];

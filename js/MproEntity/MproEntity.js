@@ -255,7 +255,7 @@ function MproEntity()
         }
         else
         {
-            externalEnvironment.removeService(JSON.stringify(dataRemove));
+            window.externalEnvironment.removeService(JSON.stringify(dataRemove));
             me.cod = 2147483647;
 
             if (joined)
@@ -435,7 +435,7 @@ function MproEntity()
         }
         else
         {
-            externalEnvironment.recordService(JSON.stringify(dataRecord), function(id)
+            window.externalEnvironment.recordService(JSON.stringify(dataRecord), function(id)
             {
                 if (insert)
                 {
@@ -451,7 +451,7 @@ function MproEntity()
                     dataReference.Ix = ix;
                     dataReference.CodRef = codref;
 
-                    externalEnvironment.recordService(JSON.stringify(dataReference));
+                    window.externalEnvironment.recordService(JSON.stringify(dataReference));
                 }
 
                 if (joined)
@@ -586,7 +586,7 @@ function MproEntity()
 
                 if(window.externalEnvironment && !remote)
                 {
-                    externalEnvironment.createTableService(JSON.stringify(createTable));
+                    window.externalEnvironment.createTableService(JSON.stringify(createTable));
                 }
             }
         }
