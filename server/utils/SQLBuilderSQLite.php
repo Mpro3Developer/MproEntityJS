@@ -122,8 +122,10 @@ class SQLBuilderSQLite implements SQLBuilder
         
         if($sqlWhere != "")
             $sql .= $sqlInner." WHERE ".$sqlWhere." ".($this->obj->OrderBy != "" ? " ORDER BY ".$this->obj->OrderBy : "");
-        else
+        else if($this->obj->Where != "")
             $sql .= $sqlInner." WHERE ".$this->obj->Where." ".($this->obj->OrderBy != "" ? " ORDER BY ".$this->obj->OrderBy : "");
+        else
+            $sql .= $sqlInner." ".($this->obj->OrderBy != "" ? " ORDER BY ".$this->obj->OrderBy : "");
         
         return $sql;
     }
