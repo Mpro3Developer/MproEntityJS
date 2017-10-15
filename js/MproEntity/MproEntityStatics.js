@@ -211,6 +211,7 @@ MproEntity.getWhere = function (classe)
 
                 callBack(res);
             });
+            return elems;
         }
 
         if (!window.externalEnvironment || remote)
@@ -330,6 +331,7 @@ MproEntity.getWhere = function (classe)
                     callBack(elems, end);
             });
             ajax.execute(sync);
+            return elems;
         }
 
         if(window.externalEnvironment && !remote)
@@ -428,6 +430,7 @@ MproEntity.getWhere = function (classe)
                 if (arrTmp.length === 0)
                     callBack(elems, end);
             });
+            return elems;
         }
 
         return elems;
