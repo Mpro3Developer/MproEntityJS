@@ -174,7 +174,14 @@ MproEntity.getWhere = function (classe)
         {
             MproEntity.getAll(classe, function(data)
             {
-                var res = data.filter(function(i){ return eval(dataRequest.IndexWhere); });
+                var res = undefined;
+
+                // for where cases
+                if(dataRequest.IndexWhere != "")
+                    res = data.filter(function(i){ return eval(dataRequest.IndexWhere); });
+                else // for get all or statement without where
+                    res = data;
+
                 var pts = [];
                 var fid = "";
 
