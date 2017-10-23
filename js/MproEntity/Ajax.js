@@ -52,6 +52,23 @@ function Ajax()
     };
 
     /**
+     * Serialize object to a QueryString for pass as ajax arguments
+     */
+    this.serialize = function(obj, prefix) 
+    {
+        var str = [], p;
+        for(p in obj) {
+          if (obj.hasOwnProperty(p)) {
+            var k = prefix ? prefix + "[" + p + "]" : p, v = obj[p];
+            str.push((v !== null && typeof v === "object") ?
+              serialize(v, k) :
+              encodeURIComponent(k) + "=" + encodeURIComponent(v));
+          }
+        }
+        return str.join("&");
+    };
+
+    /**
         * Executa a transação Ajax
         */
     this.execute = function (_async)
@@ -59,23 +76,33 @@ function Ajax()
         if (_async === undefined)
             _async = true;
 
-        $.ajax({
-            async: _async,
-            type: 'post',
-            cache: false,
-            url: this.Url + "?cache=" + new Date().getTime() + Math.random(),
-            data: _data,
-            success: function (data)
+        var ajx = new XMLHttpRequest();
+
+        ajx.open(
+            "POST",
+            (this.Url + "?cache=" + new Date().getTime() + Math.random()),
+            _async
+        );
+
+        ajx.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        ajx.send(this.serialize(_data));
+
+        ajx.onreadystatechange = function()
+        {
+            if(ajx.readyState == 4 && ajx.status == 200)
             {
+                var data = ajx.responseText;
                 if (_funcS !== null)
                     _funcS(data);
-            },
-            error: function (data)
-            {
-                console.log(data);
-                if (_funcE !== null)
-                    _funcE(data);
             }
-        });
+        };
+
+        ajx.onerror = function()
+        {
+            var data = ajx.responseText;
+            console.log(data);
+            if (_funcE !== null)
+                _funcE(data);
+        };
     };
 }
