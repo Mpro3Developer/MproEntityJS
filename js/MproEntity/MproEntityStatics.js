@@ -679,7 +679,7 @@ MproEntity.getAll = function (classe, callBack, where, ordBy, limiter, superFilt
             {
                 for(var i = 0; i < res.length; i++)
                 {
-                    res[i] = MproEntity.extend(window[dataRequest.Name], res[i]);
+                    res[i] = MproEntity.copyEntity(window[dataRequest.Name], res[i]);
                 }
                 callBack(res);
             });
@@ -920,7 +920,7 @@ MproEntity.enableIndexedDB = function()
     MproEntity.indexedDB = true;
 };
 
-MproEntity.extend = function(clas, values)
+MproEntity.copyEntity = function(clas, values)
 {
     var obj = new clas();
     for(var field in values)
