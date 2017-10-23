@@ -24,7 +24,6 @@ function Ajax()
     var _data = "";
     var _funcS = null;
     var _funcE = null;
-    $.ajaxSetup({cache: false});
 
     /**
         * Seta os parametros para o Ajax
