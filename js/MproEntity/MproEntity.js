@@ -165,7 +165,7 @@ function MproEntity()
             }
         }
 
-        var tmpNamesRelation = $.extend(true, [], namesRelation);
+        var tmpNamesRelation = MproEntity.extend(namesRelation); //$.extend(true, [], namesRelation);
 
         var ajax = new Ajax();
         ajax.Url = MproEntity.remoteServer + "/dataRemoveService" + MproEntity.remoteServerTech;
@@ -216,7 +216,7 @@ function MproEntity()
             }
         }
 
-        var tmpNamesRelation = $.extend(true, [], namesRelation);
+        var tmpNamesRelation = MproEntity.extend(namesRelation); //$.extend(true, [], namesRelation);
 
         if(MproEntity.indexedDB)
         {
@@ -298,7 +298,7 @@ function MproEntity()
             dataRecord.Fields = getValuesUpdates();
         }
 
-        var tmpNamesRelation = $.extend(true, [], namesRelation);
+        var tmpNamesRelation = MproEntity.extend(namesRelation); //$.extend(true, [], namesRelation);
         me.cod = auxCod;
 
         var ajax = new Ajax();
@@ -369,7 +369,7 @@ function MproEntity()
             dataRecord.Fields = getValuesUpdates();
         }
 
-        var tmpNamesRelation = $.extend(true, [], namesRelation);
+        var tmpNamesRelation = MproEntity.extend(namesRelation); //$.extend(true, [], namesRelation);
 
         if(MproEntity.indexedDB)
         {

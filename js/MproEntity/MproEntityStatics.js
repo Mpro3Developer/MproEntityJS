@@ -929,3 +929,8 @@ MproEntity.copyEntity = function(clas, values)
     }
     return obj;
 };
+
+MproEntity.extend = function (objToCopy)
+{
+    return JSON.parse(JSON.stringify(objToCopy));
+};
